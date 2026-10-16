@@ -113,7 +113,7 @@ description: "Implementation tasks for desktop trip management"
 
 **Purpose**: 驗證跨故事品質、設計指南一致性及部署/離線 app shell。
 
-- [ ] T028 [P] 檢查 `src/features/trips/TripHomePage.tsx`、`src/features/trips/TripForm.tsx`、`src/features/trips/TripDetailsPage.tsx` 與 `src/styles/tailwind.css` 符合 `docs/design-guide.md` 及憲章 VI：全站一致使用主題 tokens、四種指定字體與 lucide-react，且符合對比、手機字級及點擊尺寸要求；檢查五章桌機/手機排列與目的地拖曳各輸入方式及視覺狀態。
+- [x] T028 [P] 檢查 `src/features/trips/TripHomePage.tsx`、`src/features/trips/TripForm.tsx`、`src/features/trips/TripDetailsPage.tsx` 與 `src/styles/tailwind.css` 符合 `docs/design-guide.md` 及憲章 VI：全站一致使用主題 tokens、四種指定字體與 lucide-react，且符合對比、手機字級及點擊尺寸要求；檢查五章桌機/手機排列與目的地拖曳各輸入方式及視覺狀態。
 - [x] T029 執行 `specs/001-trip-management/quickstart.md` 的完整驗證，修正 `package.json`、`vite.config.ts`、`src/` 或 `tests/` 中發現的問題；確認測試、production build、瀏覽器重開持久性、GitHub Pages base path 與安裝後離線 app shell。
 
 ---

@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 
 interface SortableDestinationsProps {
   items: string[];
@@ -35,6 +35,12 @@ interface SortableDestinationRowProps {
   error?: string;
   onChange: (index: number, value: string) => void;
   onRemove: (index: number) => void;
+}
+
+// 觸控拖曳開始時若其他輸入框仍有焦點，瀏覽器會捲回該輸入框而中斷拖曳，因此先釋放焦點。
+function releaseOtherFocus(event: SyntheticEvent<HTMLElement>) {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active !== event.currentTarget) active.blur();
 }
 
 function DestinationContent({
@@ -60,6 +66,8 @@ function DestinationContent({
         {...listeners}
         aria-label={`拖曳排序目的地：${value || `目的地 ${index + 1}`}`}
         className="grid size-11 shrink-0 cursor-grab place-items-center text-muted active:cursor-grabbing"
+        onMouseDownCapture={releaseOtherFocus}
+        onTouchStartCapture={releaseOtherFocus}
         ref={setActivatorNodeRef}
         style={{ touchAction: "none" }}
         type="button"
@@ -72,7 +80,7 @@ function DestinationContent({
           aria-label={`目的地 ${index + 1}`}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className={`min-h-12 w-full border-b bg-transparent px-0 py-2 text-base text-ink outline-none focus:border-ink ${error ? "border-budget-over" : "border-rule"}`}
+          className="min-h-12 w-full bg-transparent px-0 py-2 text-base text-ink outline-none"
           onChange={(event) => onChange(index, event.target.value)}
           value={value}
         />
@@ -103,7 +111,7 @@ function SortableDestinationRow(props: SortableDestinationRowProps) {
 
   return (
     <li
-      className={`flex min-h-[68px] items-center gap-1 border-b px-1 transition-colors ${isDragging ? "border-2 border-dashed border-ink" : "border-rule"}`}
+      className={`flex min-h-[68px] items-center gap-1 border-b px-1 pt-3 transition-colors ${isDragging ? "border-2 border-dashed border-ink" : props.error ? "border-budget-over" : "border-rule focus-within:border-ink"}`}
       data-sort-index={props.index}
       data-drag-placeholder={isDragging ? "true" : undefined}
       data-testid="sortable-destination"
@@ -127,13 +135,13 @@ function SortableDestinationRow(props: SortableDestinationRowProps) {
 
 function DraggedDestination({ index, value }: { index: number; value: string }) {
   return (
-    <div className="flex min-h-[68px] items-center gap-1 border border-ink bg-surface px-1 ring-1 ring-accent/30 [transform:scale(1.02)_rotate(-0.3deg)]" data-testid="sortable-overlay">
+    <div className="flex min-h-[68px] items-center gap-1 border border-ink bg-surface px-1 pt-3 ring-1 ring-accent/30 [transform:scale(1.02)_rotate(-0.3deg)]" data-testid="sortable-overlay">
       <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center text-muted">
         <GripVertical className="size-5" strokeWidth={1.5} />
       </span>
       <span className="grid min-w-0 flex-1 gap-1">
         <span className="text-xs text-muted">目的地 {index + 1}</span>
-        <span className="border-b border-rule py-2 text-base text-ink">{value}</span>
+        <span className="py-2 text-base text-ink">{value}</span>
       </span>
       <span aria-hidden="true" className="size-11 shrink-0" />
     </div>

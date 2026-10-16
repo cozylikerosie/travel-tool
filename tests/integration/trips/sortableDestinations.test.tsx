@@ -108,6 +108,23 @@ describe("sortable destinations", () => {
     expect(onChange).toHaveBeenLastCalledWith(["香川", "岡山", "愛媛"]);
   });
 
+  it("releases focus from another field when a touch drag starts", () => {
+    render(
+      <>
+        <input aria-label="同行者 1" />
+        <SortableHarness />
+      </>,
+    );
+    const companionInput = screen.getByLabelText("同行者 1");
+    companionInput.focus();
+    const handle = screen.getByRole("button", { name: "拖曳排序目的地：愛媛" });
+    const touch = { identifier: 1, target: handle, clientX: 20, clientY: 20 };
+
+    fireEvent.touchStart(handle, { touches: [touch], changedTouches: [touch] });
+    expect(companionInput).not.toHaveFocus();
+    fireEvent.touchEnd(handle, { touches: [], changedTouches: [touch] });
+  });
+
   it("allows removing an item without changing the relative order of others", async () => {
     const user = userEvent.setup();
     const onRemove = vi.fn();

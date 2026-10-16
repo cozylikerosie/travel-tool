@@ -249,11 +249,11 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
             </button>
           </div>
           {companions.map((companion, index) => (
-            <div className="flex items-start gap-3 border-b border-rule" key={`companion-${index}`}>
+            <div className="flex items-start gap-3 border-b border-rule pt-3 transition-colors focus-within:border-ink" key={`companion-${index}`}>
               <label className="grid min-w-0 flex-1 gap-1">
                 <span className="text-xs text-muted">同行者 {index + 1}</span>
                 <input
-                  className={inputClass(false)}
+                  className="min-h-12 w-full bg-transparent px-0 py-2 text-base text-ink outline-none placeholder:text-muted"
                   aria-label={`同行者 ${index + 1}`}
                   value={companion}
                   onChange={(event) => updateArrayValue(companions, setCompanions, index, event.target.value)}
