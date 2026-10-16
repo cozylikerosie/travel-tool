@@ -12,7 +12,7 @@
 
 **Language/Version**: TypeScript with strict type checking; select a current Vite-compatible version during scaffold.
 
-**Primary Dependencies**: Vite, React, Tailwind CSS, Dexie.js, vite-plugin-pwa, lucide-react, Vitest, React Testing Library, jsdom, fake-indexeddb.
+**Primary Dependencies**: Vite, React, Tailwind CSS, Dexie.js, Zod, vite-plugin-pwa, lucide-react, Vitest, React Testing Library, jsdom, fake-indexeddb.
 
 **Storage**: Browser IndexedDB through Dexie.js; no backend or remote persistence.
 
@@ -39,6 +39,7 @@
 - **III. 裝置獨立與使用者掌控資料 — PASS**: 旅程僅存於使用者裝置的 IndexedDB，不要求登入、遠端服務或同步。
 - **IV. 功能必須有測試 — PASS**: 每個使用者可見流程均規劃 Vitest/RTL 測試；儲存、日期分類、驗證、複製與刪除均有對應測試情境。
 - **V. 簡單且聚焦 — PASS**: 本次只建旅程資料與必要 CRUD；未實作每日行程、地圖、交通、費用資料表、匯出匯入或協作。
+- **VI. 全站視覺一致 — PASS**: Tailwind 主題依 `docs/design-guide.md` 定義色彩與字體 tokens，元件使用 Lucide React；另有跨故事視覺指南檢查任務 T028。
 - **Additional Constraints — PASS**: 介面及提示使用繁體中文；桌面是本 feature 的主要操作介面。
 - **Development Workflow — PASS**: 每項功能以 spec 驗收情境與 automated tests 對應，設計後再次檢查範圍與資料保存原則。
 

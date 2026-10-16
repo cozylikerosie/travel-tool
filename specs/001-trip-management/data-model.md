@@ -8,7 +8,9 @@ One user-created travel plan. Persist each record in the Dexie `trips` store.
 
 | Field | Type | Required | Rules |
 |---|---|---:|---|
-| `id` | UUID string | Yes | Stable primary key; copying a trip creates a new ID. |
+| `id` | UUID string | Yes | Stable primary key; create with `crypto.randomUUID()`; copying a trip creates a new ID. |
+| `createdAt` | ISO 8601 UTC timestamp | Yes | Set when the trip is first created; immutable on update. |
+| `updatedAt` | ISO 8601 UTC timestamp | Yes | Set on creation and refreshed on each successful update. |
 | `name` | String | Yes | Trim surrounding whitespace; must not be empty. |
 | `destinations` | String array | Yes | At least one non-empty, trimmed destination; preserve user order. |
 | `startDate` | `YYYY-MM-DD` string | Yes | Calendar date only; must not be after `endDate`. |
@@ -37,10 +39,11 @@ The budget amount and currency are either both absent or both present. The form 
 ## Versioning and Future JSON Exchange
 
 - Dexie database version tracks IndexedDB schema/index changes. Increase it when schema changes; provide a tested `.upgrade()` migration when existing records must change.
-- Future JSON export/import must use a separate top-level `formatVersion` and validate imported records before writing. JSON format version is not the Dexie database version.
+- Define one shared Zod schema for editable Trip fields. The runtime form-input schema and full persisted Trip schema must derive from those same field rules; infer corresponding TypeScript types from the Zod schemas rather than maintaining duplicate field definitions.
+- Future JSON export/import must use a separate top-level `formatVersion` and validate each complete imported Trip with the full persisted Trip schema before writing. JSON format version is not the Dexie database version.
 - Feature 001 does not implement import, export, migration UI, or future entity stores.
 
 ## Copy and Delete Behavior
 
-- Copy creates a new unsaved/editable Trip draft from the source's user-entered fields. Saving assigns a new `id`; mutable arrays are copied independently. Editing or deleting either saved Trip must not mutate the other.
+- Copy creates a new unsaved/editable Trip draft from the source's user-entered fields. Saving assigns a new `id`, `createdAt`, and `updatedAt`; mutable arrays are copied independently. Editing or deleting either saved Trip must not mutate the other.
 - Delete requires explicit confirmation. Cancellation performs no database write; confirmation removes the Trip.
