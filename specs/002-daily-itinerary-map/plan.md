@@ -22,9 +22,9 @@
 
 **Project Type**: 單一前端 Web 應用程式／可安裝的靜態 PWA。
 
-**External Services**: CARTO basemaps 圖磚（免金鑰，需標示來源）；Google Maps URLs（僅產生連結，免金鑰）。不使用任何需金鑰或付費的服務。
+**External Services**: Esri 灰階底圖圖磚（免金鑰，需標示來源；2026-10-16 由 CARTO 改用，見 research）；Google Maps URLs（僅產生連結，免金鑰）。不使用任何需金鑰或付費的服務。
 
-**Visual Design**: 遵循 `docs/design-guide.md`：Positron 灰階底圖（深色模式 Dark Matter）、墨黑／點綴色的自訂編號標記與線條、2px 章節粗線與 1px 細線、Day 標籤採「Day 1・12.10 THU」雜誌式日期、lucide-react 1.5px 圖示。
+**Visual Design**: 遵循 `docs/design-guide.md`：Esri 淺灰底圖（深色模式深灰）、墨黑／點綴色的自訂編號標記與線條、2px 章節粗線與 1px 細線、Day 標籤採「Day 1・12.10 THU」雜誌式日期、lucide-react 1.5px 圖示。
 
 **Performance Goals**: 無額外數值目標；以每天 10 個以內地點為驗收規模，切換天數與修改時間後清單與地圖即時更新。
 

@@ -103,3 +103,53 @@ export function getTodayLocalDate(now: Date = new Date()): string {
   const day = String(now.getDate()).padStart(2, "0");
   return `${String(year).padStart(4, "0")}-${month}-${day}`;
 }
+
+export interface TripDay {
+  dayNumber: number;
+  date: string;
+  label: string;
+}
+
+const WEEKDAYS_SHORT = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
+
+// 以 UTC 計算日曆日期，不受執行環境時區影響
+function toUtcDate(value: string): Date {
+  const { year, month, day } = parseDateOnly(value);
+  const date = new Date(Date.UTC(2000, month - 1, day));
+  date.setUTCFullYear(year);
+  return date;
+}
+
+function formatUtcDate(date: Date): string {
+  const year = String(date.getUTCFullYear()).padStart(4, "0");
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function addDaysToDateOnly(value: string, days: number): string {
+  const date = toUtcDate(value);
+  date.setUTCDate(date.getUTCDate() + days);
+  return formatUtcDate(date);
+}
+
+export function getWeekdayShort(value: string): (typeof WEEKDAYS_SHORT)[number] {
+  return WEEKDAYS_SHORT[toUtcDate(value).getUTCDay()]!;
+}
+
+export function formatTripDayDate(value: string): string {
+  return `${value.slice(5, 7)}.${value.slice(8, 10)}`;
+}
+
+export function listTripDays(startDate: string, endDate: string): TripDay[] {
+  const duration = getTripDurationDays(startDate, endDate);
+  return Array.from({ length: duration }, (_, index) => {
+    const date = addDaysToDateOnly(startDate, index);
+    const dayNumber = index + 1;
+    return {
+      dayNumber,
+      date,
+      label: `Day ${dayNumber}・${formatTripDayDate(date)} ${getWeekdayShort(date)}`,
+    };
+  });
+}

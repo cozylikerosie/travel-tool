@@ -29,6 +29,17 @@
   line-height: 1.8;
   color: var(--color-ink);
   background: var(--color-paper);
+
+  /* 地圖路線色：每種交通方式一色，低彩度；對淺灰底圖對比皆 ≥ 3:1（見 docs/design-guide.md） */
+  --color-route-rail: #2f4f8f;
+  --color-route-bus: #3f7f3a;
+  --color-route-ferry: #14808f;
+  --color-route-taxi: #9a7410;
+  --color-route-walk: #8a5a2b;
+  --color-route-drive: #b4462e;
+  --color-route-flight: #6e4a9e;
+  --color-route-other: #a63e6e;
+  --color-route-unset: #6b6b6b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +54,15 @@
     --color-budget-good: #91a98b;
     --color-budget-near: #d1b078;
     --color-budget-over: #d27d70;
+    --color-route-rail: #8fa8e0;
+    --color-route-bus: #8cc285;
+    --color-route-ferry: #6cc3cf;
+    --color-route-taxi: #e0bc5c;
+    --color-route-walk: #d1a27a;
+    --color-route-drive: #ee8e76;
+    --color-route-flight: #b9a0de;
+    --color-route-other: #e58fb5;
+    --color-route-unset: #a8a39a;
   }
 }
 
@@ -67,3 +87,38 @@ select,
 textarea {
   font: inherit;
 }
+/* 地圖：標記與路線只用墨黑／點綴色，顏色一律取自主題變數，深色模式自動切換 */
+.leaflet-container {
+  background: var(--color-paper);
+  font-family: var(--font-body);
+}
+
+/* 加上 .leaflet-marker-icon 提高權重，避免被稍後載入的 leaflet.css 的 display: block 覆蓋 */
+.leaflet-marker-icon.map-marker {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-paper);
+  border-radius: 9999px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+.leaflet-marker-icon.map-marker--selected {
+  background: var(--color-accent);
+  font-size: 18px;
+  z-index: 1000 !important;
+}
+
+.map-line--rail { stroke: var(--color-route-rail); }
+.map-line--bus { stroke: var(--color-route-bus); }
+.map-line--ferry { stroke: var(--color-route-ferry); }
+.map-line--taxi { stroke: var(--color-route-taxi); }
+.map-line--walk { stroke: var(--color-route-walk); }
+.map-line--drive { stroke: var(--color-route-drive); }
+.map-line--flight { stroke: var(--color-route-flight); }
+.map-line--other { stroke: var(--color-route-other); }
+.map-line--unset { stroke: var(--color-route-unset); }

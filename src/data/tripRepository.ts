@@ -33,8 +33,14 @@ export function createTripRepository(database: TripDatabase): TripRepository {
     },
 
     async delete(id) {
-      await database.transaction("rw", database.trips, () =>
-        database.trips.delete(id),
+      await database.transaction(
+        "rw",
+        [database.trips, database.places, database.transportSegments],
+        async () => {
+          await database.trips.delete(id);
+          await database.places.where("tripId").equals(id).delete();
+          await database.transportSegments.where("tripId").equals(id).delete();
+        },
       );
     },
 

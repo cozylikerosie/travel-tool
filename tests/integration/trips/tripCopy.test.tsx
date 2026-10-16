@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "../../../src/app/App";
 import { createTripDatabase } from "../../../src/data/database";
+import { createItineraryRepository } from "../../../src/data/itineraryRepository";
 import { createTripRepository } from "../../../src/data/tripRepository";
 import type { Trip } from "../../../src/features/trips/tripSchema";
 
@@ -38,8 +39,26 @@ describe("trip copy", () => {
     );
     databases.push(database);
     const repository = createTripRepository(database);
+    const itineraryRepository = createItineraryRepository(database);
     await repository.create(sourceTrip);
-    render(<App repository={repository} />);
+    const first = await itineraryRepository.addPlace(sourceTrip.id, 1, {
+      name: "岡山城",
+      address: "",
+      coordinates: null,
+      arrivalTime: "09:00",
+      stay: { kind: "none" },
+      notes: "",
+    });
+    const second = await itineraryRepository.addPlace(sourceTrip.id, 1, {
+      name: "倉敷",
+      address: "",
+      coordinates: null,
+      arrivalTime: "14:00",
+      stay: { kind: "none" },
+      notes: "",
+    });
+    await itineraryRepository.setTransportMode(sourceTrip.id, 1, first.id, second.id, "rail");
+    render(<App itineraryRepository={itineraryRepository} repository={repository} />);
 
     await user.click(await screen.findByRole("button", { name: `查看旅程：${sourceTrip.name}` }));
     await user.click(screen.getByRole("button", { name: "複製旅程" }));
@@ -61,6 +80,9 @@ describe("trip copy", () => {
     expect(copy).toBeDefined();
     expect(copy?.id).not.toBe(sourceTrip.id);
     await expect(repository.getById(sourceTrip.id)).resolves.toEqual(sourceTrip);
+    // 複製旅程只帶入基本資訊，不複製每日行程（data-model「複製旅程（001）」）
+    await expect(itineraryRepository.listPlacesForTrip(copy!.id)).resolves.toEqual([]);
+    await expect(itineraryRepository.listPlacesForTrip(sourceTrip.id)).resolves.toHaveLength(2);
 
     await user.click(screen.getByRole("button", { name: `查看旅程：${copy!.name}` }));
     await user.click(screen.getByRole("button", { name: "刪除旅程" }));

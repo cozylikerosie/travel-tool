@@ -10,9 +10,10 @@
 - **Rationale**: 使用者指定；Leaflet 不需 API 金鑰、可自由選擇底圖，react-leaflet 5 為支援 React 19 的版本。
 - **Alternatives considered**: MapLibre GL（向量圖磚、需另找免金鑰樣式來源，對「直線連點」需求過重）；Google Maps JavaScript API（需金鑰與計費，違反本次限制）。
 
-## 底圖：CARTO Positron
+## 底圖：Esri 灰階底圖（2026-10-16 修訂，原為 CARTO Positron）
 
-- **Decision**: 淺色模式使用 CARTO Positron 圖磚 `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`；深色模式（`prefers-color-scheme: dark`）使用同系列的 Dark Matter `dark_all`，維持設計指南的低彩度與深色模式。地圖右下角保留 Leaflet 的 attribution 控制項，文字為「© OpenStreetMap contributors © CARTO」並連結至兩者的版權頁。
+- **Revision**: 實作後於真實瀏覽器驗證時發現 CARTO basemaps 已改為需要 API 金鑰（所有圖磚回傳「API KEY REQUIRED」）。改用 Esri World Light Gray Canvas（`.../Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}` 加上地名圖層 `World_Light_Gray_Reference`），深色模式使用 `World_Dark_Gray_Base`／`World_Dark_Gray_Reference`；免金鑰、本身即為低彩度灰階。原生資料到縮放 16，地圖最大縮放 18（放大顯示）。attribution 為「Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community」。風險：Esri 免費使用條款未來可能改變；OpenStreetMap 官方圖磚對非瀏覽器請求回傳 418，且政策要求應用程式節制流量，因此不採用。以下為原決策，保留作為紀錄。
+- **Decision（原）**: 淺色模式使用 CARTO Positron 圖磚 `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`；深色模式（`prefers-color-scheme: dark`）使用同系列的 Dark Matter `dark_all`，維持設計指南的低彩度與深色模式。地圖右下角保留 Leaflet 的 attribution 控制項，文字為「© OpenStreetMap contributors © CARTO」並連結至兩者的版權頁。
 - **Rationale**: 設計指南指定 Positron；CARTO basemaps 不需金鑰，但使用條款要求標示 OpenStreetMap 與 CARTO 來源。本工具為個人使用，流量遠低於其免費使用範圍。
 - **Alternatives considered**: OpenStreetMap 官方圖磚（色彩飽和、與設計指南不符，且其使用政策不鼓勵應用程式大量使用）；Stadia／Mapbox（需金鑰）。
 - **PWA 注意事項**: 地圖離線不在範圍內，Workbox 不設定圖磚的 runtime caching，也不把圖磚加入 precache；圖磚失敗時顯示「地圖暫時無法載入」提示，時間軸與連結照常運作（spec Edge Cases）。
@@ -24,6 +25,8 @@
 - **Guard**: 單元測試確認地圖模型產生的每個標記都帶有自訂 icon；`DayMap` 只透過 `createNumberedMarkerIcon` 建立 `Marker`，不 import `leaflet/dist/images/*`。Leaflet 的 CSS（`leaflet/dist/leaflet.css`）由 `DayMap` 匯入，交由 Vite 打包。
 
 ## 路線線條樣式
+
+- **Revision（2026-10-16）**: 使用者回饋地圖上看不到交通線，且要求以顏色區分、不要點線。原本的虛線／點線（尤其「未設定」的分隔線色細點線）在灰階底圖上幾乎不可見。改為每種交通方式一種低彩度實線色（未設定為灰色實線），色碼與對比計算記錄於 `docs/design-guide.md`「地圖」，以 `--color-route-*` 變數定義並提供深色模式版本；圖例移到地圖右上角，進入頁面即可看到。以下為原決策，保留作為紀錄。
 
 - **Decision**: 交通方式的中文名稱、Google 地圖 travelmode 與 polyline 樣式定義在同一份 `TRANSPORT_MODES` 常數（單一來源），並由同一份資料產生地圖圖例：
 

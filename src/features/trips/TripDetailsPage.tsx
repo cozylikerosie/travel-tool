@@ -1,33 +1,82 @@
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { formatMoney } from "../../shared/money/budget";
-import { getTripDurationDays } from "../../shared/dates/tripDates";
+import { getTripDurationDays, listTripDays, type TripDay } from "../../shared/dates/tripDates";
+import {
+  itineraryRepository as defaultItineraryRepository,
+  type ItineraryRepository,
+  type PlacesBeyondDay,
+  type RemovedDaysResolution,
+} from "../../data/itineraryRepository";
 import type { TripRepository } from "../../data/tripRepository";
 import { CopyTripButton } from "./CopyTripButton";
 import { DeleteTripDialog } from "./DeleteTripDialog";
+import { RemovedDaysDialog } from "./RemovedDaysDialog";
 import { TripForm } from "./TripForm";
-import { saveTrip } from "./saveTrip";
-import type { Trip, TripFormInput } from "./tripSchema";
+import { saveTrip, type SaveTripResult } from "./saveTrip";
+import { tripFormSchema, type Trip, type TripFormInput } from "./tripSchema";
 
 interface TripDetailsPageProps {
   trip: Trip;
   repository: TripRepository;
+  itineraryRepository?: ItineraryRepository;
   onBack: () => void;
   onSaved: (trip: Trip) => void;
   onDeleted: (id: string) => Promise<void>;
   onCopy: (initialValues: TripFormInput) => void;
+  onOpenItinerary: () => void;
 }
 
 export function TripDetailsPage({
   trip,
   repository,
+  itineraryRepository = defaultItineraryRepository,
   onBack,
   onSaved,
   onDeleted,
   onCopy,
+  onOpenItinerary,
 }: TripDetailsPageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [removedDaysPrompt, setRemovedDaysPrompt] = useState<{
+    beyond: PlacesBeyondDay;
+    keptDays: TripDay[];
+    resolve: (resolution: RemovedDaysResolution | null) => void;
+  } | null>(null);
+
+  // 旅程縮短且被移除的天有地點時，先讓使用者決定如何處理，再與旅程更新在同一交易內寫入
+  async function saveWithRemovedDaysCheck(input: TripFormInput, existingTrip?: Trip): Promise<SaveTripResult> {
+    const parsed = tripFormSchema.safeParse(input);
+    if (!existingTrip || !parsed.success) return saveTrip(input, { existingTrip, repository });
+
+    const oldDayCount = getTripDurationDays(existingTrip.startDate, existingTrip.endDate);
+    const newDayCount = getTripDurationDays(parsed.data.startDate, parsed.data.endDate);
+    if (newDayCount >= oldDayCount) return saveTrip(input, { existingTrip, repository });
+
+    const beyond = await itineraryRepository.countPlacesBeyondDay(existingTrip.id, newDayCount);
+    if (!beyond.placeCount) return saveTrip(input, { existingTrip, repository });
+
+    const resolution = await new Promise<RemovedDaysResolution | null>((resolve) =>
+      setRemovedDaysPrompt({
+        beyond,
+        keptDays: listTripDays(parsed.data.startDate, parsed.data.endDate),
+        resolve,
+      }),
+    );
+    setRemovedDaysPrompt(null);
+    if (!resolution) {
+      return { success: false, message: "已取消日期變更，旅程未修改。", fieldErrors: {} };
+    }
+
+    return saveTrip(input, {
+      existingTrip,
+      repository: {
+        ...repository,
+        update: (updatedTrip) => itineraryRepository.updateTripWithRemovedDays(updatedTrip, resolution),
+      },
+    });
+  }
 
   if (isEditing) {
     return (
@@ -55,10 +104,17 @@ export function TripDetailsPage({
             onSaved(updatedTrip);
             setIsEditing(false);
           }}
-          save={(input, existingTrip) =>
-            saveTrip(input, { existingTrip, repository })
-          }
+          save={saveWithRemovedDaysCheck}
         />
+        {removedDaysPrompt && (
+          <RemovedDaysDialog
+            keptDays={removedDaysPrompt.keptDays}
+            onCancel={() => removedDaysPrompt.resolve(null)}
+            onResolve={(resolution) => removedDaysPrompt.resolve(resolution)}
+            placeCount={removedDaysPrompt.beyond.placeCount}
+            removedDayNumbers={removedDaysPrompt.beyond.dayNumbers}
+          />
+        )}
       </main>
     );
   }
@@ -85,6 +141,14 @@ export function TripDetailsPage({
             <p className="text-base text-muted">{trip.destinations.join("・")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button
+              className="inline-flex min-h-11 items-center gap-2 border border-ink bg-ink px-4 text-sm text-paper hover:bg-transparent hover:text-ink"
+              onClick={onOpenItinerary}
+              type="button"
+            >
+              <CalendarDays aria-hidden="true" className="size-4" />
+              每日行程
+            </button>
             <CopyTripButton onCopy={onCopy} trip={trip} />
             <button
               className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-paper"

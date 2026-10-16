@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
-import { startTransition, useEffect, useState } from "react";
+import { Suspense, lazy, startTransition, useEffect, useState } from "react";
+import { itineraryRepository as defaultItineraryRepository, type ItineraryRepository } from "../data/itineraryRepository";
 import { tripRepository, type TripRepository } from "../data/tripRepository";
 import { TripForm } from "../features/trips/TripForm";
 import { TripDetailsPage } from "../features/trips/TripDetailsPage";
@@ -8,15 +9,25 @@ import { saveTrip } from "../features/trips/saveTrip";
 import { getTodayLocalDate } from "../shared/dates/tripDates";
 import type { Trip, TripFormInput } from "../features/trips/tripSchema";
 
+// 每日行程頁含 Leaflet 地圖，延後到開啟時才載入，縮小首頁的主程式
+const DayItineraryPage = lazy(() =>
+  import("../features/itinerary/DayItineraryPage").then((module) => ({ default: module.DayItineraryPage })),
+);
+
 interface AppProps {
   repository?: TripRepository;
+  itineraryRepository?: ItineraryRepository;
 }
 
-export function App({ repository = tripRepository }: AppProps = {}) {
+export function App({
+  repository = tripRepository,
+  itineraryRepository = defaultItineraryRepository,
+}: AppProps = {}) {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [isItineraryOpen, setIsItineraryOpen] = useState(false);
   const [copyDraft, setCopyDraft] = useState<TripFormInput | undefined>();
   const [loadError, setLoadError] = useState("");
 
@@ -111,12 +122,32 @@ export function App({ repository = tripRepository }: AppProps = {}) {
   }
 
   const selectedTrip = trips.find((trip) => trip.id === selectedTripId);
+  if (selectedTrip && isItineraryOpen) {
+    return (
+      <Suspense
+        fallback={
+          <main aria-busy="true" className="mx-auto grid min-h-screen max-w-7xl content-center px-5 md:px-12">
+            <p className="font-title text-xl text-muted">正在讀取每日行程…</p>
+          </main>
+        }
+      >
+        <DayItineraryPage
+          onBack={() => setIsItineraryOpen(false)}
+          repository={itineraryRepository}
+          trip={selectedTrip}
+        />
+      </Suspense>
+    );
+  }
+
   if (selectedTrip) {
     return (
       <TripDetailsPage
         onBack={() => setSelectedTripId(null)}
         onCopy={handleCopyTrip}
         onDeleted={handleDeletedTrip}
+        onOpenItinerary={() => setIsItineraryOpen(true)}
+        itineraryRepository={itineraryRepository}
         onSaved={handleSavedTrip}
         repository={repository}
         trip={selectedTrip}

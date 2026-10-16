@@ -1,5 +1,5 @@
 import { IDBFactory } from "fake-indexeddb";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTripDatabase } from "../../../src/data/database";
@@ -89,6 +89,7 @@ describe("trip save flow", () => {
 
     await fillValidForm(user);
     await user.click(screen.getByRole("button", { name: "建立旅程" }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
 
     const savedTrip = await repository.getById(id);
     expect(savedTrip).toMatchObject({
