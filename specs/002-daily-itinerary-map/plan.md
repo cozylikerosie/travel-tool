@@ -94,13 +94,18 @@ src/
 │       ├── DayMap.tsx                  # react-leaflet 地圖、圖磚、attribution、tileerror 提示
 │       ├── MapLegend.tsx
 │       └── markerIcon.ts               # createNumberedMarkerIcon（L.divIcon）
-└── shared/
-    ├── dates/tripDates.ts              # 新增 addDaysToDateOnly、getWeekdayShort、listTripDays
-    └── geo/
-        ├── locationInput.ts            # parseLocationInput
-        └── googleMapsUrls.ts           # buildGoogleMapsDirectionsUrl
+├── shared/
+│   ├── dates/tripDates.ts              # 新增 addDaysToDateOnly、getWeekdayShort、listTripDays
+│   └── geo/
+│       ├── locationInput.ts            # parseLocationInput
+│       └── googleMapsUrls.ts           # buildGoogleMapsDirectionsUrl
+└── styles/
+    └── tailwind.css                    # 新增 .map-marker、.map-line--{ink,accent,muted,rule}（使用顏色變數）
 
 tests/
+├── setup.ts                            # 補上 scrollIntoView、matchMedia 替身
+├── mocks/
+│   └── reactLeaflet.tsx                # react-leaflet 測試替身（data-* 屬性）
 ├── unit/
 │   ├── locationInput.test.ts
 │   ├── googleMapsUrls.test.ts
@@ -112,12 +117,15 @@ tests/
     ├── data/
     │   ├── databaseUpgrade.test.ts
     │   └── itineraryRepository.test.ts
-    └── itinerary/
-        ├── dayItinerary.test.tsx        # 旅程日、新增／排序／空白日
-        ├── transportSegments.test.tsx   # 交通方式、連結、重設規則
-        ├── dayMap.test.tsx              # 以 react-leaflet 替身驗證標記、連線、雙向選取
-        ├── placeEditMove.test.tsx       # 編輯、刪除、移到別天
-        └── tripDateChange.test.tsx      # 平移不警告、縮短警告三種選擇
+    ├── itinerary/
+    │   ├── dayItinerary.test.tsx        # 旅程日、新增／排序／空白日
+    │   ├── transportSegments.test.tsx   # 交通方式、連結、重設規則
+    │   ├── dayMap.test.tsx              # 以 react-leaflet 替身驗證標記、連線、雙向選取
+    │   ├── placeEditMove.test.tsx       # 編輯、刪除、移到別天
+    │   └── tripDateChange.test.tsx      # 平移不警告、縮短警告三種選擇
+    └── trips/
+        ├── tripRepository.test.ts       # 刪除旅程連帶刪除每日行程
+        └── tripCopy.test.tsx            # 複製旅程不複製每日行程
 ```
 
 **Structure Decision**: 沿用 001 的單一 Vite 前端與 feature 目錄。每日行程集中在 `src/features/itinerary/`；與 UI 無關且可重用的座標解析與 Google 地圖連結放在 `src/shared/geo/`，日期運算延伸既有 `src/shared/dates/`。資料存取沿用 repository 模式，新增 `itineraryRepository`，讓所有改變順序的寫入集中處理失效交通段。旅程日期縮短的警告屬於 001 旅程編輯流程，因此放在 `features/trips/`，但透過 `itineraryRepository` 執行資料變更。
