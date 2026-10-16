@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --color-paper: #f7f5f0;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-muted: #6b6b6b;
+  --color-rule: #d9d5cc;
+  --color-accent: #8a7a5c;
+  --color-budget-good: #6f8a6b;
+  --color-budget-near: #b8935a;
+  --color-budget-over: #a65a4e;
+  --color-dark-paper: #141414;
+  --color-dark-ink: #edeae3;
+  --color-dark-rule: #3a3833;
+  --font-title: "Noto Serif TC", "Noto Serif CJK TC", serif;
+  --font-body: "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-label: "Inter", sans-serif;
+}
+
+:root {
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--color-ink);
+  background: var(--color-paper);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-paper: #141414;
+    --color-surface: #1c1b19;
+    --color-ink: #edeae3;
+    --color-muted: #bcb9b1;
+    --color-rule: #3a3833;
+    --color-accent: #a59472;
+    --color-budget-good: #91a98b;
+    --color-budget-near: #d1b078;
+    --color-budget-over: #d27d70;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
