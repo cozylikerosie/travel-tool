@@ -23,7 +23,7 @@ export function EmptyTrips({ onCreate }: EmptyTripsProps) {
         下一段旅程，從這裡開始。
       </p>
       <button
-        className="inline-flex min-h-11 items-center gap-3 border border-ink bg-ink px-5 text-sm text-white transition-colors hover:bg-transparent hover:text-ink"
+        className="inline-flex min-h-11 items-center gap-3 border border-ink bg-ink px-5 text-sm text-paper transition-colors hover:bg-transparent hover:text-ink"
         onClick={onCreate}
         type="button"
       >

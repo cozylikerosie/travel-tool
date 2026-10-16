@@ -24,12 +24,14 @@ function SortableHarness({
   );
 }
 
-afterEach(() => {
+afterEach(async () => {
   vi.restoreAllMocks();
+  // dnd-kit 在拖曳結束後 50ms 內攔截 document click，等它解除以免影響下一個測試。
+  await new Promise((resolve) => setTimeout(resolve, 60));
 });
 
 function mockSortableRects() {
-  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
     const index = this.getAttribute("data-sort-index");
     if (index !== null) return new DOMRect(0, Number(index) * 72, 360, 68);
     return new DOMRect(0, 0, 360, 68);
@@ -49,7 +51,6 @@ describe("sortable destinations", () => {
   });
 
   it("reorders with the keyboard, updates ordinals immediately, and reports the new order", async () => {
-    const user = userEvent.setup();
     const onChange = vi.fn();
     mockSortableRects();
     render(<SortableHarness onChange={onChange} />);
@@ -70,6 +71,9 @@ describe("sortable destinations", () => {
     expect(rows).toHaveLength(3);
     expect(within(rows[0]!).getByLabelText("目的地 1")).toHaveValue("香川");
     expect(within(rows[1]!).getByLabelText("目的地 2")).toHaveValue("岡山");
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "拖曳排序目的地：岡山" })).toHaveFocus(),
+    );
   });
 
   it("reorders with a mouse drag", async () => {
@@ -97,8 +101,9 @@ describe("sortable destinations", () => {
 
     fireEvent.touchStart(handle, { touches: [startTouch], changedTouches: [startTouch] });
     expect(await screen.findByTestId("sortable-overlay", {}, { timeout: 1000 })).toBeInTheDocument();
-    fireEvent.touchMove(document, { touches: [endTouch], changedTouches: [endTouch] });
-    fireEvent.touchEnd(document, { touches: [], changedTouches: [endTouch] });
+    // TouchSensor 監聽觸控起點元素，後續事件須送到同一個把手。
+    fireEvent.touchMove(handle, { touches: [endTouch], changedTouches: [endTouch] });
+    fireEvent.touchEnd(handle, { touches: [], changedTouches: [endTouch] });
 
     expect(onChange).toHaveBeenLastCalledWith(["香川", "岡山", "愛媛"]);
   });

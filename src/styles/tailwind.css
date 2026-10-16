@@ -50,6 +50,11 @@
   box-sizing: border-box;
 }
 
+/* 設計指南：圖示統一使用 1.5px 細線條 */
+.lucide {
+  stroke-width: 1.5;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;

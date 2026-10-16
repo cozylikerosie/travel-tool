@@ -39,26 +39,10 @@ describe("trip form validation", () => {
     expect(screen.getByRole("region", { name: "預算" })).not.toBe(
       screen.getByRole("region", { name: "同行者" }),
     );
-    expect(screen.getByRole("region", { name: "基本資訊" }).className).toContain(
-      "md:grid-cols-",
-    );
-  });
-
-  it("shows five ordered sections with budget and companions separated", () => {
-    render(<TripForm />);
-
-    expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
-      "基本資訊",
-      "目的地",
-      "預算",
-      "同行者",
-      "備註",
-    ]);
-    const budgetSection = screen.getByRole("region", { name: "預算" });
-    const companionsSection = screen.getByRole("region", { name: "同行者" });
-    expect(budgetSection).not.toBe(companionsSection);
-    expect(budgetSection.className).toContain("border-t-2");
-    expect(companionsSection.className).toContain("md:grid-cols-");
+    for (const section of screen.getAllByRole("region")) {
+      expect(section.className).toContain("border-t-2");
+      expect(section.className).toContain("md:grid-cols-");
+    }
   });
 
   it("marks required fields in Traditional Chinese and never writes invalid input", async () => {

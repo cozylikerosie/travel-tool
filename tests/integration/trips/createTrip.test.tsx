@@ -49,7 +49,7 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.selectOptions(screen.getByLabelText("預算幣別"), "TWD");
   await user.click(screen.getByRole("button", { name: "新增同行者" }));
   await user.type(screen.getByLabelText("同行者 1"), "小明");
-  await user.type(screen.getByLabelText("備註"), "冬季旅行");
+  await user.type(screen.getByRole("textbox", { name: "備註" }), "冬季旅行");
 }
 
 describe("trip save flow", () => {

@@ -305,7 +305,7 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
           </button>
         )}
         <button
-          className="min-h-11 border border-ink bg-ink px-6 text-sm text-white transition-colors hover:bg-transparent hover:text-ink"
+          className="min-h-11 border border-ink bg-ink px-6 text-sm text-paper transition-colors hover:bg-transparent hover:text-ink"
           type="submit"
         >
           {initialTrip ? "儲存修改" : "建立旅程"}

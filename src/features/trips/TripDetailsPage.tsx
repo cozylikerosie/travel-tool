@@ -87,7 +87,7 @@ export function TripDetailsPage({
           <div className="flex flex-wrap gap-2">
             <CopyTripButton onCopy={onCopy} trip={trip} />
             <button
-              className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-paper"
               onClick={() => setIsEditing(true)}
               type="button"
             >

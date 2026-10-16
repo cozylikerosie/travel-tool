@@ -1,7 +1,7 @@
 import { IDBFactory } from "fake-indexeddb";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "../../../src/app/App";
 import { createTripDatabase } from "../../../src/data/database";
 import { createTripRepository } from "../../../src/data/tripRepository";
@@ -24,6 +24,7 @@ const trip: Trip = {
 const databases: ReturnType<typeof createTripDatabase>[] = [];
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   const activeDatabases = databases.splice(0);
   for (const database of activeDatabases) database.close();
   await activeDatabases.at(-1)?.delete();
@@ -62,6 +63,64 @@ describe("trip edit and delete", () => {
       createdAt: trip.createdAt,
       name: "岡山香川之旅",
     });
+  });
+
+  it("saves reordered destinations and shows the saved order in details and the list", async () => {
+    const user = userEvent.setup();
+    const repository = createRepository();
+    await repository.create({ ...trip, destinations: ["岡山", "香川", "愛媛"] });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      const index = this.getAttribute("data-sort-index");
+      return new DOMRect(0, index === null ? 0 : Number(index) * 72, 360, 68);
+    });
+    render(<App repository={repository} />);
+
+    await openTrip(user);
+    await user.click(screen.getByRole("button", { name: "編輯旅程" }));
+    const handle = screen.getByRole("button", { name: "拖曳排序目的地：愛媛" });
+    handle.focus();
+    fireEvent.keyDown(handle, { code: "Space", key: " " });
+    await screen.findByTestId("sortable-overlay");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fireEvent.keyDown(document, { code: "ArrowUp", key: "ArrowUp" });
+    fireEvent.keyDown(document, { code: "ArrowUp", key: "ArrowUp" });
+    fireEvent.keyDown(document, { code: "Space", key: " " });
+    expect(screen.getByLabelText("目的地 1")).toHaveValue("愛媛");
+    await user.click(screen.getByRole("button", { name: "儲存修改" }));
+
+    expect(await screen.findByText("愛媛・岡山・香川")).toBeInTheDocument();
+    await expect(repository.getById(trip.id)).resolves.toMatchObject({
+      destinations: ["愛媛", "岡山", "香川"],
+    });
+    await user.click(screen.getByRole("button", { name: "返回旅程列表" }));
+    const listItem = await screen.findByRole("button", { name: `查看旅程：${trip.name}` });
+    expect(within(listItem.closest("li") ?? document.body).getByText("愛媛・岡山・香川")).toBeInTheDocument();
+  });
+
+  it("discards an unsaved destination order when editing is cancelled", async () => {
+    const user = userEvent.setup();
+    const repository = createRepository();
+    await repository.create(trip);
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      const index = this.getAttribute("data-sort-index");
+      return new DOMRect(0, index === null ? 0 : Number(index) * 72, 360, 68);
+    });
+    render(<App repository={repository} />);
+
+    await openTrip(user);
+    await user.click(screen.getByRole("button", { name: "編輯旅程" }));
+    const handle = screen.getByRole("button", { name: "拖曳排序目的地：岡山" });
+    handle.focus();
+    fireEvent.keyDown(handle, { code: "Space", key: " " });
+    await screen.findByTestId("sortable-overlay");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fireEvent.keyDown(document, { code: "ArrowDown", key: "ArrowDown" });
+    fireEvent.keyDown(document, { code: "Space", key: " " });
+    expect(screen.getByLabelText("目的地 1")).toHaveValue("香川");
+    await user.click(screen.getByRole("button", { name: "取消" }));
+
+    expect(await screen.findByText("岡山・香川")).toBeInTheDocument();
+    await expect(repository.getById(trip.id)).resolves.toEqual(trip);
   });
 
   it("keeps a trip when deletion is cancelled and removes it after confirmation", async () => {

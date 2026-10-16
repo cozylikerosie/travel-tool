@@ -53,7 +53,7 @@ export function DeleteTripDialog({ tripName, onCancel, onConfirm }: DeleteTripDi
             取消
           </button>
           <button
-            className="min-h-11 border border-ink bg-ink px-5 text-sm text-white hover:bg-transparent hover:text-ink disabled:opacity-60"
+            className="min-h-11 border border-ink bg-ink px-5 text-sm text-paper hover:bg-transparent hover:text-ink disabled:opacity-60"
             disabled={isDeleting}
             onClick={handleConfirm}
             type="button"

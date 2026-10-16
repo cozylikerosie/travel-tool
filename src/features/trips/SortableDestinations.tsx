@@ -32,7 +32,6 @@ interface SortableDestinationRowProps {
   id: string;
   index: number;
   value: string;
-  isPlaceholder: boolean;
   error?: string;
   onChange: (index: number, value: string) => void;
   onRemove: (index: number) => void;
@@ -141,6 +140,12 @@ function DraggedDestination({ index, value }: { index: number; value: string }) 
   );
 }
 
+let nextDestinationKey = 0;
+
+function createDestinationKeys(count: number): string[] {
+  return Array.from({ length: count }, () => `destination-${nextDestinationKey++}`);
+}
+
 export function SortableDestinations({
   items,
   error,
@@ -148,12 +153,21 @@ export function SortableDestinations({
   onRemove,
 }: SortableDestinationsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  // 以穩定 key 追蹤每個目的地，排序後焦點與拖曳狀態才會跟著同一個項目移動。
+  const [keys, setKeys] = useState(() => createDestinationKeys(items.length));
+  let currentKeys = keys;
+  if (keys.length !== items.length) {
+    currentKeys = keys.length < items.length
+      ? [...keys, ...createDestinationKeys(items.length - keys.length)]
+      : keys.slice(0, items.length);
+    setKeys(currentKeys);
+  }
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  const activeIndex = activeId === null ? -1 : Number(activeId);
+  const activeIndex = activeId === null ? -1 : currentKeys.indexOf(activeId);
   const activeValue = items[activeIndex];
 
   function handleDragStart(event: DragStartEvent) {
@@ -164,18 +178,17 @@ export function SortableDestinations({
     setActiveId(null);
     if (!event.over || event.active.id === event.over.id) return;
 
-    const oldIndex = Number(event.active.id);
-    const newIndex = Number(event.over.id);
-    if (
-      Number.isInteger(oldIndex) &&
-      Number.isInteger(newIndex) &&
-      oldIndex >= 0 &&
-      newIndex >= 0 &&
-      oldIndex < items.length &&
-      newIndex < items.length
-    ) {
-      onChange(arrayMove(items, oldIndex, newIndex));
-    }
+    const oldIndex = currentKeys.indexOf(String(event.active.id));
+    const newIndex = currentKeys.indexOf(String(event.over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    setKeys(arrayMove(currentKeys, oldIndex, newIndex));
+    onChange(arrayMove(items, oldIndex, newIndex));
+  }
+
+  function handleRemove(index: number) {
+    setKeys(currentKeys.filter((_, keyIndex) => keyIndex !== index));
+    onRemove(index);
   }
 
   return (
@@ -187,21 +200,20 @@ export function SortableDestinations({
       sensors={sensors}
     >
       <SortableContext
-        items={items.map((_, index) => String(index))}
+        items={currentKeys}
         strategy={verticalListSortingStrategy}
       >
         <ol aria-label="可排序目的地" className="grid">
           {items.map((value, index) => (
             <SortableDestinationRow
               error={index === 0 ? error : undefined}
-              id={String(index)}
+              id={currentKeys[index]!}
               index={index}
-              isPlaceholder={activeIndex === index}
-              key={index}
-              onChange={onChange === undefined ? () => undefined : (itemIndex, nextValue) => {
+              key={currentKeys[index]}
+              onChange={(itemIndex, nextValue) => {
                 onChange(items.map((item, currentIndex) => currentIndex === itemIndex ? nextValue : item));
               }}
-              onRemove={onRemove}
+              onRemove={handleRemove}
               value={value}
             />
           ))}

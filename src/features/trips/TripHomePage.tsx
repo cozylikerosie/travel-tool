@@ -24,7 +24,7 @@ export function TripHomePage({ trips, today, onCreate, onSelect }: TripHomePageP
         </div>
         {trips.length > 0 && (
           <button
-            className="inline-flex min-h-11 items-center gap-3 border border-ink px-5 text-sm text-ink transition-colors hover:bg-ink hover:text-white"
+            className="inline-flex min-h-11 items-center gap-3 border border-ink px-5 text-sm text-ink transition-colors hover:bg-ink hover:text-paper"
             onClick={onCreate}
             type="button"
           >
