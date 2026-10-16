@@ -23,7 +23,7 @@ description: "Implementation tasks for desktop trip management"
 **Purpose**: Establish the single frontend app and shared tooling.
 
 - [x] T001 建立 Vite React TypeScript 專案骨架，新增 `package.json`、`index.html`、`src/main.tsx`、`src/app/App.tsx` 與 `tsconfig.json`。
-- [x] T002 在 `package.json` 加入 Vite、React、Tailwind CSS、Dexie.js、Zod、vite-plugin-pwa、lucide-react、Vitest、React Testing Library、jsdom 與 fake-indexeddb 相依套件；在 `vite.config.ts` 設定應用程式路徑、Tailwind 與 PWA 外掛。
+- [ ] T002 在 `package.json` 加入 Vite、React、Tailwind CSS、Dexie.js、Zod、vite-plugin-pwa、lucide-react、@dnd-kit/core、@dnd-kit/sortable、@dnd-kit/utilities、Vitest、React Testing Library、jsdom 與 fake-indexeddb 相依套件；在 `vite.config.ts` 設定應用程式路徑、Tailwind 與 PWA 外掛。
 - [x] T003 [P] 在 `tests/setup.ts` 與 `vitest.config.ts` 設定 Vitest/jsdom 測試環境，讓 React Testing Library 與 fake-indexeddb 可供測試使用。
 - [x] T004 [P] 在 `src/styles/tailwind.css` 建立 Tailwind 主題 tokens，逐一對應 `docs/design-guide.md` 的背景 `#F7F5F0`、白色 `#FFFFFF`、文字 `#1A1A1A`/`#6B6B6B`、分隔線 `#D9D5CC`、點綴色 `#8A7A5C`、預算狀態色 `#6F8A6B`/`#B8935A`/`#A65A4E`、深色模式色 `#141414`/`#EDEAE3`/`#3A3833`，以及 Noto Serif TC、Noto Sans TC、Cormorant Garamond、Inter 字體家族。
 - [x] T005 [P] 新增 `.github/workflows/deploy-pages.yml` 建置並部署靜態網站至 GitHub Pages，使用 `vite.config.ts` 中與 repository/site 類型相符的 base path。
@@ -61,7 +61,7 @@ description: "Implementation tasks for desktop trip management"
 ### Implementation for User Story 1
 
 - [x] T016 [US1] 在 `src/features/trips/saveTrip.ts` 實作建立/更新共用保存流程：先以 `tripFormSchema.safeParse` runtime 驗證使用者輸入；通過後建立時以 `crypto.randomUUID()` 產生 `id` 並設定 `createdAt`/`updatedAt`，更新時保留既有 `id`/`createdAt` 並更新 `updatedAt`；接著以完整 `tripSchema.safeParse` 驗證；只有兩次驗證與 metadata 產生皆成功後，才透過 `src/data/tripRepository.ts` 寫入 IndexedDB。任一步驟失敗都不得寫入；更新寫入失敗不得改變原資料，並回傳可供介面顯示的錯誤。
-- [x] T017 [US1] 在 `src/features/trips/TripForm.tsx` 建立繁體中文旅程表單，輸入名稱、多個目的地、出發/回程日期、選填預算與幣別、多人同行者及備註；提交時呼叫 `src/features/trips/saveTrip.ts`，將 runtime validation 欄位錯誤連結至相應欄位，並將其他保存失敗顯示為清楚錯誤訊息。
+- [ ] T017 [US1] 在 `src/features/trips/TripForm.tsx` 建立繁體中文旅程表單，依序呈現五個編號章節；電腦版章節資訊與欄位左右兩欄、手機版上下單欄，章節上方使用 2px `#1A1A1A` 分隔線、章節內使用 1px `#D9D5CC` 細線；預算與同行者獨立分區。提交時呼叫 `src/features/trips/saveTrip.ts`，將 runtime validation 欄位錯誤連結至相應欄位，並將其他保存失敗顯示為清楚錯誤訊息。
 - [x] T018 [US1] 在 `src/features/trips/TripHomePage.tsx` 與 `src/features/trips/TripList.tsx` 串接建立、repository 保存及建立後摘要列表，顯示名稱、目的地、日期與依純日期 helper 計算的天數。
 
 **Checkpoint**: 使用者可建立並持久保存有效旅程；無效資料會阻止儲存並顯示繁體中文提示。
@@ -96,12 +96,12 @@ description: "Implementation tasks for desktop trip management"
 
 ### Tests for User Story 3
 
-- [x] T023 [P] [US3] 先在 `tests/integration/trips/tripEditDelete.test.tsx` 撰寫編輯與刪除測試，驗證儲存編輯後衍生資訊更新、取消刪除不寫入、確認刪除後列表移除。
+- [ ] T023 [P] [US3] 先在 `tests/integration/trips/tripEditDelete.test.tsx` 與 `tests/integration/trips/sortableDestinations.test.tsx` 撰寫編輯、刪除及排序測試，驗證鍵盤可重排、滑鼠/觸控 sensors 可啟動、拖曳中浮起與虛線佔位可見、目的地編號及儲存/列表順序正確、取消刪除不寫入、確認刪除後列表移除。
 - [x] T024 [P] [US3] 先在 `tests/integration/trips/tripCopy.test.tsx` 撰寫複製測試，驗證複製資料先可編輯、儲存後使用新 ID，且變更或刪除副本不影響來源。
 
 ### Implementation for User Story 3
 
-- [x] T025 [US3] 在 `src/features/trips/TripDetailsPage.tsx` 實作旅程檢視及編輯入口，重用 `src/features/trips/TripForm.tsx` 與 `src/features/trips/saveTrip.ts` 保存流程，保留既有 ID/建立時間並更新修改時間，儲存後更新列表衍生資訊。
+- [ ] T025 [US3] 在 `src/features/trips/TripDetailsPage.tsx` 實作旅程檢視及編輯入口，重用 `src/features/trips/TripForm.tsx` 與 `src/features/trips/saveTrip.ts` 保存流程，保留既有 ID/建立時間並更新修改時間，儲存後更新列表衍生資訊；更新 `src/features/trips/SortableDestinations.tsx` 使用 @dnd-kit 滑鼠、觸控及鍵盤 sensors，呈現浮起項目與虛線佔位，依排序後陣列保存目的地。
 - [x] T026 [US3] 在 `src/features/trips/DeleteTripDialog.tsx` 實作繁體中文二次確認與取消流程；取消不得呼叫刪除，確認才呼叫 `src/data/tripRepository.ts` 並更新首頁。
 - [x] T027 [US3] 在 `src/features/trips/CopyTripButton.tsx` 實作複製旅程入口，將來源欄位及陣列複製為獨立可編輯草稿，儲存時產生新 ID，並接入 `src/features/trips/TripDetailsPage.tsx`。
 
@@ -113,7 +113,7 @@ description: "Implementation tasks for desktop trip management"
 
 **Purpose**: 驗證跨故事品質、設計指南一致性及部署/離線 app shell。
 
-- [x] T028 [P] 檢查 `src/features/trips/TripHomePage.tsx`、`src/features/trips/TripForm.tsx`、`src/features/trips/TripDetailsPage.tsx` 與 `src/styles/tailwind.css` 符合 `docs/design-guide.md` 及憲章 VI：全站一致使用主題 tokens、四種指定字體與 lucide-react，且符合對比、手機字級及點擊尺寸要求。
+- [ ] T028 [P] 檢查 `src/features/trips/TripHomePage.tsx`、`src/features/trips/TripForm.tsx`、`src/features/trips/TripDetailsPage.tsx` 與 `src/styles/tailwind.css` 符合 `docs/design-guide.md` 及憲章 VI：全站一致使用主題 tokens、四種指定字體與 lucide-react，且符合對比、手機字級及點擊尺寸要求；檢查五章桌機/手機排列與目的地拖曳各輸入方式及視覺狀態。
 - [x] T029 執行 `specs/001-trip-management/quickstart.md` 的完整驗證，修正 `package.json`、`vite.config.ts`、`src/` 或 `tests/` 中發現的問題；確認測試、production build、瀏覽器重開持久性、GitHub Pages base path 與安裝後離線 app shell。
 
 ---
@@ -139,7 +139,7 @@ description: "Implementation tasks for desktop trip management"
 ### Parallel Opportunities
 
 - **Setup**: T003, T004, and T005 can run in parallel after T002 because they change test config, theme CSS, and deployment workflow files separately.
-- **Foundational**: T006, T007, and T008 can run in parallel; after T008/T009, T010, T011, and T012 can proceed in parallel in separate files. T013 follows the repository tests.
+- **Foundational**: T006, T007, and T008 can run in parallel; after T008/T009, T010, T011, and T012 can proceed in parallel in separate files. T013 follows the repository tests. T002 must finish before installing/using @dnd-kit in US3.
 - **US1**: T014 and T015 are independent test files and can be authored in parallel; both precede T016-T018.
 - **US2**: T019 and T020 can be authored in parallel before T021-T022.
 - **US3**: T023 and T024 can be authored in parallel before T025-T027.

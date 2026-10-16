@@ -16,6 +16,51 @@ function createRepositoryStub(): TripRepository {
 }
 
 describe("trip form validation", () => {
+  it("renders the five numbered sections in order with budget and companions separated", () => {
+    render(<TripForm />);
+
+    expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
+      "基本資訊",
+      "目的地",
+      "預算",
+      "同行者",
+      "備註",
+    ]);
+    expect(screen.getByText("01")).toBeInTheDocument();
+    expect(screen.getByText("BASICS")).toBeInTheDocument();
+    expect(screen.getByText("02")).toBeInTheDocument();
+    expect(screen.getByText("DESTINATIONS")).toBeInTheDocument();
+    expect(screen.getByText("03")).toBeInTheDocument();
+    expect(screen.getByText("BUDGET")).toBeInTheDocument();
+    expect(screen.getByText("04")).toBeInTheDocument();
+    expect(screen.getByText("COMPANIONS")).toBeInTheDocument();
+    expect(screen.getByText("05")).toBeInTheDocument();
+    expect(screen.getByText("NOTES")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "預算" })).not.toBe(
+      screen.getByRole("region", { name: "同行者" }),
+    );
+    expect(screen.getByRole("region", { name: "基本資訊" }).className).toContain(
+      "md:grid-cols-",
+    );
+  });
+
+  it("shows five ordered sections with budget and companions separated", () => {
+    render(<TripForm />);
+
+    expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
+      "基本資訊",
+      "目的地",
+      "預算",
+      "同行者",
+      "備註",
+    ]);
+    const budgetSection = screen.getByRole("region", { name: "預算" });
+    const companionsSection = screen.getByRole("region", { name: "同行者" });
+    expect(budgetSection).not.toBe(companionsSection);
+    expect(budgetSection.className).toContain("border-t-2");
+    expect(companionsSection.className).toContain("md:grid-cols-");
+  });
+
   it("marks required fields in Traditional Chinese and never writes invalid input", async () => {
     const user = userEvent.setup();
     const repository = createRepositoryStub();

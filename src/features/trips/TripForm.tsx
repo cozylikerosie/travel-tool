@@ -6,6 +6,7 @@ import {
   type SaveTripResult,
   type TripFieldErrors,
 } from "./saveTrip";
+import { SortableDestinations } from "./SortableDestinations";
 import type { Trip, TripFormInput } from "./tripSchema";
 
 interface TripFormProps {
@@ -36,6 +37,37 @@ function inputClass(hasError: boolean): string {
 
 function formFieldError(errors: TripFieldErrors, field: keyof TripFormInput) {
   return errors[field];
+}
+
+function FormSection({
+  number,
+  label,
+  title,
+  children,
+}: {
+  number: string;
+  label: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const headingId = `trip-form-section-${number}`;
+  return (
+    <section
+      aria-labelledby={headingId}
+      className="grid gap-5 border-t-2 border-ink pt-5 md:grid-cols-[minmax(180px,0.7fr)_minmax(0,1.3fr)] md:gap-10 md:pt-6"
+    >
+      <header className="flex items-baseline gap-4 md:items-start">
+        <span className="font-display text-2xl leading-none text-accent">{number}</span>
+        <div className="grid gap-1">
+          <p className="font-label text-[11px] uppercase tracking-[0.15em] text-muted">
+            {label}
+          </p>
+          <h2 className="font-title text-xl leading-snug text-ink" id={headingId}>{title}</h2>
+        </div>
+      </header>
+      <div className="grid min-w-0 content-start gap-5">{children}</div>
+    </section>
+  );
 }
 
 export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }: TripFormProps) {
@@ -103,8 +135,8 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="grid gap-8">
-      <div className="grid gap-6 md:grid-cols-2">
+    <form noValidate onSubmit={handleSubmit} className="grid gap-8 md:gap-12">
+      <FormSection number="01" label="BASICS" title="基本資訊">
         <label className="grid content-start gap-1">
           <span className="text-sm text-muted">旅程名稱</span>
           <input
@@ -117,126 +149,99 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
           />
           <FieldError id="name-error" message={fieldErrors.name} />
         </label>
-
-        <div className="grid content-start gap-1">
-          <span className="text-sm text-muted">日期</span>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-1">
-              <span className="text-xs text-muted">出發日期</span>
-              <input
-                className={inputClass(Boolean(fieldErrors.startDate))}
-                name="startDate"
-                type="date"
-                aria-label="出發日期"
-                aria-invalid={Boolean(fieldErrors.startDate)}
-                aria-describedby={fieldErrors.startDate ? "startDate-error" : undefined}
-                defaultValue={initialTrip?.startDate ?? initialValues?.startDate ?? ""}
-              />
-              <FieldError id="startDate-error" message={fieldErrors.startDate} />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs text-muted">回程日期</span>
-              <input
-                className={inputClass(Boolean(fieldErrors.endDate))}
-                name="endDate"
-                type="date"
-                aria-label="回程日期"
-                aria-invalid={Boolean(fieldErrors.endDate)}
-                aria-describedby={fieldErrors.endDate ? "endDate-error" : undefined}
-                defaultValue={initialTrip?.endDate ?? initialValues?.endDate ?? ""}
-              />
-              <FieldError id="endDate-error" message={fieldErrors.endDate} />
-            </label>
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="grid gap-1">
+            <span className="text-sm text-muted">出發日期</span>
+            <input
+              className={inputClass(Boolean(fieldErrors.startDate))}
+              name="startDate"
+              type="date"
+              aria-label="出發日期"
+              aria-invalid={Boolean(fieldErrors.startDate)}
+              aria-describedby={fieldErrors.startDate ? "startDate-error" : undefined}
+              defaultValue={initialTrip?.startDate ?? initialValues?.startDate ?? ""}
+            />
+            <FieldError id="startDate-error" message={fieldErrors.startDate} />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-sm text-muted">回程日期</span>
+            <input
+              className={inputClass(Boolean(fieldErrors.endDate))}
+              name="endDate"
+              type="date"
+              aria-label="回程日期"
+              aria-invalid={Boolean(fieldErrors.endDate)}
+              aria-describedby={fieldErrors.endDate ? "endDate-error" : undefined}
+              defaultValue={initialTrip?.endDate ?? initialValues?.endDate ?? ""}
+            />
+            <FieldError id="endDate-error" message={fieldErrors.endDate} />
+          </label>
         </div>
-      </div>
+      </FormSection>
 
-      <fieldset className="grid gap-3 border-0 border-t border-rule p-0 pt-5">
-        <legend className="sr-only">目的地</legend>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted">目的地</p>
-          <button
-            className="inline-flex min-h-11 items-center gap-2 px-2 text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
-            onClick={() => setDestinations([...destinations, ""])}
-            type="button"
-          >
-            <Plus aria-hidden="true" className="size-4" />新增目的地
-          </button>
-        </div>
-        {destinations.map((destination, index) => {
-          const error = index === 0 ? fieldErrors.destinations : undefined;
-          return (
-            <div className="flex items-start gap-3" key={`destination-${index}`}>
-              <label className="grid min-w-0 flex-1 gap-1">
-                <span className="text-xs text-muted">目的地 {index + 1}</span>
-                <input
-                  className={inputClass(Boolean(error))}
-                  aria-label={`目的地 ${index + 1}`}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? "destinations-error" : undefined}
-                  value={destination}
-                  onChange={(event) => updateArrayValue(destinations, setDestinations, index, event.target.value)}
-                />
-                {index === 0 && <FieldError id="destinations-error" message={error} />}
-              </label>
-              {destinations.length > 1 && (
-                <button
-                  aria-label={`移除目的地 ${index + 1}`}
-                  className="mt-5 grid size-11 shrink-0 place-items-center text-muted hover:text-ink"
-                  onClick={() => setDestinations(destinations.filter((_, itemIndex) => itemIndex !== index))}
-                  type="button"
-                >
-                  <X aria-hidden="true" className="size-4" />
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </fieldset>
-
-      <div className="grid gap-8 border-t border-rule pt-5 md:grid-cols-2">
-        <fieldset className="grid content-start gap-3 border-0 p-0">
-          <legend className="sr-only">預算</legend>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid content-start gap-1">
-              <span className="text-sm text-muted">總預算</span>
-              <input
-                className={inputClass(Boolean(fieldErrors.budgetAmount))}
-                inputMode="decimal"
-                name="budgetAmount"
-                aria-label="總預算"
-                aria-invalid={Boolean(fieldErrors.budgetAmount)}
-                aria-describedby={fieldErrors.budgetAmount ? "budgetAmount-error" : undefined}
-                placeholder="選填"
-                value={budgetAmount}
-                onChange={(event) => setBudgetAmount(event.target.value)}
-              />
-              <FieldError id="budgetAmount-error" message={fieldErrors.budgetAmount} />
-            </label>
-            <label className="grid content-start gap-1">
-              <span className="text-sm text-muted">預算幣別</span>
-              <select
-                className={inputClass(Boolean(fieldErrors.budgetCurrency))}
-                aria-label="預算幣別"
-                aria-invalid={Boolean(fieldErrors.budgetCurrency)}
-                aria-describedby={fieldErrors.budgetCurrency ? "budgetCurrency-error" : undefined}
-                value={budgetCurrency}
-                onChange={(event) => setBudgetCurrency(event.target.value as TripFormInput["budgetCurrency"])}
-              >
-                <option value="">選擇幣別</option>
-                <option value="TWD">新台幣 TWD</option>
-                <option value="JPY">日圓 JPY</option>
-              </select>
-              <FieldError id="budgetCurrency-error" message={fieldErrors.budgetCurrency} />
-            </label>
-          </div>
-        </fieldset>
-
+      <FormSection number="02" label="DESTINATIONS" title="目的地">
         <div className="grid gap-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted">同行者</p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-muted">拖曳把手可調整目的地順序</p>
             <button
-              className="inline-flex min-h-11 items-center gap-2 px-2 text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 px-2 text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
+              onClick={() => setDestinations([...destinations, ""])}
+              type="button"
+            >
+              <Plus aria-hidden="true" className="size-4" />新增目的地
+            </button>
+          </div>
+          <SortableDestinations
+            error={fieldErrors.destinations}
+            items={destinations}
+            onChange={setDestinations}
+            onRemove={(index) => setDestinations(destinations.filter((_, itemIndex) => itemIndex !== index))}
+          />
+        </div>
+      </FormSection>
+
+      <FormSection number="03" label="BUDGET" title="預算">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="grid content-start gap-1">
+            <span className="text-sm text-muted">總預算</span>
+            <input
+              className={inputClass(Boolean(fieldErrors.budgetAmount))}
+              inputMode="decimal"
+              name="budgetAmount"
+              aria-label="總預算"
+              aria-invalid={Boolean(fieldErrors.budgetAmount)}
+              aria-describedby={fieldErrors.budgetAmount ? "budgetAmount-error" : undefined}
+              placeholder="選填"
+              value={budgetAmount}
+              onChange={(event) => setBudgetAmount(event.target.value)}
+            />
+            <FieldError id="budgetAmount-error" message={fieldErrors.budgetAmount} />
+          </label>
+          <label className="grid content-start gap-1">
+            <span className="text-sm text-muted">預算幣別</span>
+            <select
+              className={inputClass(Boolean(fieldErrors.budgetCurrency))}
+              aria-label="預算幣別"
+              aria-invalid={Boolean(fieldErrors.budgetCurrency)}
+              aria-describedby={fieldErrors.budgetCurrency ? "budgetCurrency-error" : undefined}
+              value={budgetCurrency}
+              onChange={(event) => setBudgetCurrency(event.target.value as TripFormInput["budgetCurrency"])}
+            >
+              <option value="">選擇幣別</option>
+              <option value="TWD">新台幣 TWD</option>
+              <option value="JPY">日圓 JPY</option>
+            </select>
+            <FieldError id="budgetCurrency-error" message={fieldErrors.budgetCurrency} />
+          </label>
+        </div>
+      </FormSection>
+
+      <FormSection number="04" label="COMPANIONS" title="同行者">
+        <div className="grid gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-muted">選填</p>
+            <button
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 px-2 text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
               onClick={() => setCompanions([...companions, ""])}
               type="button"
             >
@@ -244,7 +249,7 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
             </button>
           </div>
           {companions.map((companion, index) => (
-            <div className="flex items-start gap-3" key={`companion-${index}`}>
+            <div className="flex items-start gap-3 border-b border-rule" key={`companion-${index}`}>
               <label className="grid min-w-0 flex-1 gap-1">
                 <span className="text-xs text-muted">同行者 {index + 1}</span>
                 <input
@@ -265,18 +270,20 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
             </div>
           ))}
         </div>
-      </div>
+      </FormSection>
 
-      <label className="grid gap-1 border-t border-rule pt-5">
-        <span className="text-sm text-muted">備註</span>
-        <textarea
-          className="min-h-24 resize-y border-b border-rule bg-transparent px-0 py-2 text-base text-ink outline-none focus:border-ink"
-          name="notes"
-          aria-label="備註"
-          defaultValue={initialTrip?.notes ?? initialValues?.notes ?? ""}
-          rows={3}
-        />
-      </label>
+      <FormSection number="05" label="NOTES" title="備註">
+        <label className="grid gap-1">
+          <span className="sr-only">備註</span>
+          <textarea
+            className="min-h-24 resize-y border-b border-rule bg-transparent px-0 py-2 text-base text-ink outline-none focus:border-ink"
+            name="notes"
+            aria-label="備註"
+            defaultValue={initialTrip?.notes ?? initialValues?.notes ?? ""}
+            rows={3}
+          />
+        </label>
+      </FormSection>
 
       {formMessage && (
         <p
