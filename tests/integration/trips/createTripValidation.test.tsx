@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { TripForm } from "../../../src/features/trips/TripForm";
@@ -43,6 +43,28 @@ describe("trip form validation", () => {
       expect(section.className).toContain("border-t-2");
       expect(section.className).toContain("md:grid-cols-");
     }
+  });
+
+  it("offers every shared currency labelled as Chinese name and code, TWD and JPY first", () => {
+    render(<TripForm />);
+
+    const options = within(screen.getByLabelText("預算幣別")).getAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "選擇幣別",
+      "台幣（TWD）",
+      "日圓（JPY）",
+      "韓元（KRW）",
+      "美元（USD）",
+      "歐元（EUR）",
+      "港幣（HKD）",
+      "人民幣（CNY）",
+      "泰銖（THB）",
+      "越南盾（VND）",
+      "新加坡幣（SGD）",
+      "馬來西亞令吉（MYR）",
+      "英鎊（GBP）",
+      "澳幣（AUD）",
+    ]);
   });
 
   it("marks required fields in Traditional Chinese and never writes invalid input", async () => {

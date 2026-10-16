@@ -1,13 +1,8 @@
-export type TripCurrency = "TWD" | "JPY";
-
-const CURRENCY_MINOR_DIGITS: Record<TripCurrency, number> = {
-  TWD: 2,
-  JPY: 0,
-};
+import { getCurrencyMinorDigits, type CurrencyCode } from "./currencies";
 
 export function parseMoneyToMinorUnits(
   amountText: string,
-  currency: TripCurrency,
+  currency: CurrencyCode,
 ): number {
   const normalized = amountText.trim();
   const match = /^(\d+)(?:\.(\d+))?$/.exec(normalized);
@@ -15,7 +10,7 @@ export function parseMoneyToMinorUnits(
     throw new RangeError("金額格式不正確");
   }
 
-  const minorDigits = CURRENCY_MINOR_DIGITS[currency];
+  const minorDigits = getCurrencyMinorDigits(currency);
   const fraction = match[2] ?? "";
   if (fraction.length > minorDigits) {
     throw new RangeError(`金額最多只能有 ${minorDigits} 位小數`);
@@ -35,31 +30,31 @@ export function parseMoneyToMinorUnits(
 
 export function formatMoney(
   amountMinor: number,
-  currency: TripCurrency,
+  currency: CurrencyCode,
   locale = "zh-TW",
 ): string {
   if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
     throw new RangeError("金額必須是非負安全整數");
   }
 
-  const majorAmount = amountMinor / 10 ** CURRENCY_MINOR_DIGITS[currency];
+  const majorAmount = amountMinor / 10 ** getCurrencyMinorDigits(currency);
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-    minimumFractionDigits: CURRENCY_MINOR_DIGITS[currency],
-    maximumFractionDigits: CURRENCY_MINOR_DIGITS[currency],
+    minimumFractionDigits: getCurrencyMinorDigits(currency),
+    maximumFractionDigits: getCurrencyMinorDigits(currency),
   }).format(majorAmount);
 }
 
 export function formatMoneyInput(
   amountMinor: number,
-  currency: TripCurrency,
+  currency: CurrencyCode,
 ): string {
   if (!Number.isSafeInteger(amountMinor) || amountMinor < 0) {
     throw new RangeError("金額必須是非負安全整數");
   }
 
-  const minorDigits = CURRENCY_MINOR_DIGITS[currency];
+  const minorDigits = getCurrencyMinorDigits(currency);
   if (minorDigits === 0) return String(amountMinor);
 
   const amount = BigInt(amountMinor);

@@ -12,6 +12,20 @@ describe("currency minor-unit money rules", () => {
     expect(parseMoneyToMinorUnits("0.01", "TWD")).toBe(1);
   });
 
+  it.each(["KRW", "VND"] as const)("parses %s as a zero-decimal currency", (currency) => {
+    expect(parseMoneyToMinorUnits("1500000", currency)).toBe(1_500_000);
+    expect(() => parseMoneyToMinorUnits("1500000.5", currency)).toThrow();
+    expect(formatMoneyInput(1_500_000, currency)).toBe("1500000");
+  });
+
+  it.each(["USD", "EUR", "GBP"] as const)("parses %s with two decimal places", (currency) => {
+    expect(parseMoneyToMinorUnits("1234.56", currency)).toBe(123_456);
+    expect(parseMoneyToMinorUnits("1234.5", currency)).toBe(123_450);
+    expect(() => parseMoneyToMinorUnits("1234.567", currency)).toThrow();
+    expect(formatMoneyInput(123_456, currency)).toBe("1234.56");
+    expect(formatMoney(123_456, currency)).toContain("1,234.56");
+  });
+
   it("parses JPY as a zero-decimal currency", () => {
     expect(parseMoneyToMinorUnits("250000", "JPY")).toBe(250_000);
     expect(() => parseMoneyToMinorUnits("250000.1", "JPY")).toThrow();

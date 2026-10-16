@@ -1,6 +1,7 @@
 import { CircleAlert, Plus, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { formatMoneyInput } from "../../shared/money/budget";
+import { CURRENCIES, formatCurrencyLabel } from "../../shared/money/currencies";
 import {
   saveTrip,
   type SaveTripResult,
@@ -228,8 +229,9 @@ export function TripForm({ initialTrip, initialValues, onSaved, onCancel, save }
               onChange={(event) => setBudgetCurrency(event.target.value as TripFormInput["budgetCurrency"])}
             >
               <option value="">選擇幣別</option>
-              <option value="TWD">新台幣 TWD</option>
-              <option value="JPY">日圓 JPY</option>
+              {CURRENCIES.map(({ code }) => (
+                <option key={code} value={code}>{formatCurrencyLabel(code)}</option>
+              ))}
             </select>
             <FieldError id="budgetCurrency-error" message={fieldErrors.budgetCurrency} />
           </label>

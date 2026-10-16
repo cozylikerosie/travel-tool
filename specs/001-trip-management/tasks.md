@@ -118,6 +118,17 @@ description: "Implementation tasks for desktop trip management"
 
 ---
 
+## Phase 7: 預算幣別擴充
+
+**Purpose**: 依 FR-019/FR-020 將預算幣別由台幣、日圓擴充為 13 種，並集中定義供 004 記帳共用。
+
+- [x] T030 [P] 先在 `tests/unit/currencies.test.ts` 撰寫共用幣別清單測試，驗證 13 種幣別、台幣與日圓在前的順序、「中文名稱（代碼）」標籤，以及 JPY/KRW/VND 零位、其餘兩位的小數位數。
+- [x] T031 [P] 在 `tests/unit/budget.test.ts` 與 `tests/unit/tripSchema.test.ts` 補上 KRW/VND 零位、USD/EUR/GBP 兩位小數的解析與格式化測試、未知幣別拒絕測試，以及既有 TWD/JPY 旅程資料不變的相容性測試。
+- [x] T032 新增 `src/shared/money/currencies.ts` 集中定義幣別代碼、中文名稱與小數位數；`src/shared/money/budget.ts` 與 `src/features/trips/tripSchema.ts` 改由此清單取得幣別型別、驗證與小數位數，台幣維持兩位小數以保持既有資料不變。
+- [x] T033 更新 `src/features/trips/TripForm.tsx` 的預算幣別選單，依共用清單順序顯示「中文名稱（代碼）」；在 `tests/integration/trips/createTripValidation.test.tsx` 驗證選單內容與順序，並在 `tests/integration/trips/tripEditDelete.test.tsx` 驗證既有台幣預算正確載入、改選歐元後以兩位小數保存。
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -128,6 +139,7 @@ description: "Implementation tasks for desktop trip management"
 - **User Story 2 (Phase 4)**: Depends on the home/list shell from User Story 1.
 - **User Story 3 (Phase 5)**: Depends on the form and repository from User Story 1.
 - **Polish (Phase 6)**: Depends on all three desired user stories.
+- **Currency expansion (Phase 7)**: Depends on T008/T011 (schema and money helpers) and T017 (form); T030 and T031 precede T032-T033.
 
 ### User Story Dependencies
 

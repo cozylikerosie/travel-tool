@@ -65,6 +65,29 @@ describe("trip edit and delete", () => {
     });
   });
 
+  it("loads an existing TWD budget unchanged and saves a new currency with its precision", async () => {
+    const user = userEvent.setup();
+    const repository = createRepository();
+    await repository.create(trip);
+    render(<App repository={repository} />);
+
+    await openTrip(user);
+    await user.click(screen.getByRole("button", { name: "編輯旅程" }));
+    expect(screen.getByLabelText("總預算")).toHaveValue("60000.00");
+    expect(screen.getByLabelText("預算幣別")).toHaveValue("TWD");
+
+    await user.selectOptions(screen.getByLabelText("預算幣別"), "EUR");
+    await user.clear(screen.getByLabelText("總預算"));
+    await user.type(screen.getByLabelText("總預算"), "850.5");
+    await user.click(screen.getByRole("button", { name: "儲存修改" }));
+
+    await screen.findByRole("button", { name: "編輯旅程" });
+    await expect(repository.getById(trip.id)).resolves.toMatchObject({
+      budgetAmountMinor: 85_050,
+      budgetCurrency: "EUR",
+    });
+  });
+
   it("saves reordered destinations and shows the saved order in details and the list", async () => {
     const user = userEvent.setup();
     const repository = createRepository();

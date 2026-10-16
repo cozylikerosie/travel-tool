@@ -16,7 +16,7 @@ One user-created travel plan. Persist each record in the Dexie `trips` store.
 | `startDate` | `YYYY-MM-DD` string | Yes | Calendar date only; must not be after `endDate`. |
 | `endDate` | `YYYY-MM-DD` string | Yes | Calendar date only; must be on or after `startDate`. |
 | `budgetAmountMinor` | Safe integer or null | No | If present, greater than zero; stored in currency minor units. |
-| `budgetCurrency` | ISO 4217 code or null | No | Required when an amount is present; feature 001 supports `TWD` and `JPY`. |
+| `budgetCurrency` | ISO 4217 code or null | No | Required when an amount is present; must be one of the codes in `src/shared/money/currencies.ts` (TWD, JPY, KRW, USD, EUR, HKD, CNY, THB, VND, SGD, MYR, GBP, AUD); minor digits come from the same list. |
 | `companions` | String array | No | Names are trimmed; empty values are omitted; preserve user order. |
 | `notes` | String or null | No | Optional free text. |
 

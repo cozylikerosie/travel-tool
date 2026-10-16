@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { isDateOnly } from "../../shared/dates/tripDates";
-import { parseMoneyToMinorUnits, type TripCurrency } from "../../shared/money/budget";
+import { parseMoneyToMinorUnits } from "../../shared/money/budget";
+import { CURRENCY_CODES, type CurrencyCode } from "../../shared/money/currencies";
 
-const currencySchema = z.enum(["TWD", "JPY"]);
+const currencySchema = z.enum(CURRENCY_CODES);
 
 export const tripFieldsSchema = z
   .object({
@@ -55,7 +56,7 @@ export const tripFormSchema = rawTripFormSchema
   .transform((form, context) => {
     const amountText = form.budgetAmount.trim();
     let budgetAmountMinor: number | null = null;
-    let budgetCurrency: TripCurrency | null = null;
+    let budgetCurrency: CurrencyCode | null = null;
 
     if (amountText) {
       if (!form.budgetCurrency) {

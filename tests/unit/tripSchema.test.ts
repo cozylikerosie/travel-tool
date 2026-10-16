@@ -80,4 +80,20 @@ describe("shared trip Zod schemas", () => {
       tripSchema.safeParse({ ...validTrip, createdAt: undefined }).success,
     ).toBe(false);
   });
+
+  it("accepts every shared currency and converts amounts with its precision", () => {
+    expect(tripFormSchema.parse({ ...validForm, budgetAmount: "1234.56", budgetCurrency: "USD" }))
+      .toMatchObject({ budgetAmountMinor: 123_456, budgetCurrency: "USD" });
+    expect(tripFormSchema.parse({ ...validForm, budgetAmount: "500000", budgetCurrency: "KRW" }))
+      .toMatchObject({ budgetAmountMinor: 500_000, budgetCurrency: "KRW" });
+    expect(tripFormSchema.safeParse({ ...validForm, budgetAmount: "100.5", budgetCurrency: "VND" }).success)
+      .toBe(false);
+    expect(tripSchema.safeParse({ ...validTrip, budgetCurrency: "XYZ" }).success).toBe(false);
+  });
+
+  it("keeps previously saved TWD and JPY trips valid with unchanged amounts", () => {
+    expect(tripSchema.parse(validTrip)).toMatchObject({ budgetAmountMinor: 6_000_025, budgetCurrency: "TWD" });
+    expect(tripSchema.parse({ ...validTrip, budgetAmountMinor: 250_000, budgetCurrency: "JPY" }))
+      .toMatchObject({ budgetAmountMinor: 250_000, budgetCurrency: "JPY" });
+  });
 });
