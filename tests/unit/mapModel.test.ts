@@ -85,8 +85,35 @@ describe("buildMapLines", () => {
     expect(lines[1]?.className).toContain("map-line--unset");
   });
 
-  it("draws nothing around a manual place and never skips over it", () => {
-    expect(buildMapLines([A, MANUAL, C], [])).toEqual([]);
+  it("bridges over manual places with an unset grey line", () => {
+    const lines = buildMapLines([A, MANUAL, C], [segment("a", "m", "walk"), segment("m", "c", "rail")]);
+    expect(lines).toEqual([
+      expect.objectContaining({
+        id: "a->c",
+        fromPlaceId: "a",
+        toPlaceId: "c",
+        mode: null,
+        bridgesManualPlaces: true,
+        positions: [
+          [34.6672, 133.9354],
+          [34.5951, 133.772],
+        ],
+      }),
+    ]);
+    expect(lines[0]?.className).toContain("map-line--unset");
+  });
+
+  it("bridges several manual places in a row and keeps real segments", () => {
+    const manualTwo = place("n", "10:30", null);
+    const lines = buildMapLines([A, B, MANUAL, manualTwo, C], [segment("a", "b", "bus")]);
+    expect(lines.map((line) => [line.id, line.mode, line.bridgesManualPlaces])).toEqual([
+      ["a->b", "bus", false],
+      ["b->c", null, true],
+    ]);
+  });
+
+  it("draws nothing when fewer than two places have coordinates", () => {
+    expect(buildMapLines([MANUAL, A], [])).toEqual([]);
   });
 
   it("never outputs colour codes", () => {

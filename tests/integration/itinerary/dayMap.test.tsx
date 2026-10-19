@@ -74,7 +74,13 @@ describe("US3 在地圖上總覽當天路線", () => {
     renderPage(context);
 
     await waitFor(() => expect(markerOrders()).toEqual(["1", "2", "4"]));
-    expect(lines()).toHaveLength(1);
+    // 岡山城 → 倉敷駅（無座標）→ 倉敷：地圖以灰線直接連接岡山城與倉敷
+    expect(lines().map((line) => line.getAttribute("data-mode"))).toEqual(["unset", "unset"]);
+    expect(JSON.parse(lines()[1]!.getAttribute("data-positions")!)).toEqual([
+      [CASTLE.lat, CASTLE.lng],
+      [KURASHIKI.lat, KURASHIKI.lng],
+    ]);
+    expect(screen.getAllByText("一端沒有座標，地圖上以灰線連接前後地點")).toHaveLength(2);
   });
 
   it("highlights the timeline item when a marker is clicked", async () => {
@@ -231,6 +237,9 @@ describe("US3 在地圖上總覽當天路線", () => {
     const timeline = screen.getByRole("region", { name: "當天時間軸" });
     const map = screen.getByRole("region", { name: "當天地圖" });
     expect(timeline.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(map).toHaveClass("h-[420px]", "lg:sticky", "lg:h-screen");
+    expect(map).toHaveClass("h-[420px]", "lg:h-full");
+    // 寬螢幕時時間軸在自己的區塊內捲動，地圖與頁面固定在一個螢幕高
+    expect(timeline).toHaveClass("lg:overflow-y-auto");
+    expect(screen.getByRole("main")).toHaveClass("lg:h-screen");
   });
 });

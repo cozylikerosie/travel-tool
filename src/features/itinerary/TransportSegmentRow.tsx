@@ -42,6 +42,9 @@ export function TransportSegmentRow({ from, to, mode, onChange }: TransportSegme
           ))}
         </select>
       </label>
+      {(!from.coordinates || !to.coordinates) && (
+        <span className="basis-full text-xs text-muted">一端沒有座標，地圖上以灰線連接前後地點</span>
+      )}
       {href && (
         <a
           aria-label={`在 Google 地圖開啟：${leg}`}

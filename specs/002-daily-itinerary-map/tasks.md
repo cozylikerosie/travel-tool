@@ -179,6 +179,16 @@ description: "Implementation tasks for desktop daily itinerary, transport modes 
 
 ---
 
+## Phase 9: 使用者回饋調整（2026-10-19）
+
+- [X] T061 [P] 在 `src/features/itinerary/mapModel.ts` 讓 `buildMapLines` 略過沒有座標的地點、以未設定灰線連接前後有座標的地點（`bridgesManualPlaces`）；在 `src/features/itinerary/TransportSegmentRow.tsx` 為任一端沒有座標的段落加上說明；更新 `tests/unit/mapModel.test.ts` 與 `tests/integration/itinerary/dayMap.test.tsx`（spec US3-3、FR-013 修訂）。
+- [X] T062 [P] 在 `src/features/itinerary/DayItineraryPage.tsx` 改為寬螢幕整頁固定一個視窗高（`lg:h-screen`、`lg:grid-rows-[auto_minmax(0,1fr)]`）、時間軸區塊內捲動且日期標題固定在上方、地圖 `lg:h-full` 完整顯示；窄螢幕維持單欄與 420px 地圖；更新 `dayMap.test.tsx` 的版面斷言（spec FR-012 修訂）。
+- [X] T063 [P] 在 `src/styles/tailwind.css` 讓 Leaflet 縮放按鈕與版權列使用主題色，深色模式不出現白色區塊；版權列選擇器加上 `.leaflet-control-container` 提高權重，避免被延後載入的 `leaflet.css` 覆蓋。
+- [X] T065 新增 `src/features/itinerary/PlaceFormDialog.tsx`，新增與編輯地點改以置中對話框呈現（`role="dialog"`、開啟時焦點進入第一個欄位、Esc 或取消關閉並把焦點還給觸發按鈕、內容過長時對話框內捲動），解決時間軸捲動後點編輯表單出現在畫面外的問題；`DayItineraryPage.tsx` 改用對話框；`tests/integration/itinerary/placeEditMove.test.tsx` 新增對話框焦點與關閉測試。
+- [X] T064 以無頭 Chrome 自動執行 T053 中可自動化的 21 項檢查：001 舊資料庫升級、寬螢幕整頁不捲動與地圖／圖例／版權列在畫面內、灰線略過無座標地點、路線色、Google 地圖連結、深色模式底圖與路線色、768px 單欄與 420px 地圖、斷網提示與時間軸可用、主控台無錯誤，全部通過。
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

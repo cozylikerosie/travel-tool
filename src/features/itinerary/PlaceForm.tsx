@@ -168,11 +168,11 @@ export function PlaceForm({ initialPlace, onSubmit, onCancel }: PlaceFormProps) 
   return (
     <form
       aria-label={title}
-      className="grid gap-6 border-t-2 border-ink bg-paper pt-5"
+      className="grid gap-6 bg-paper pt-6 md:pt-8"
       noValidate
       onSubmit={handleSubmit}
     >
-      <header className="grid gap-1">
+      <header className="grid gap-1 border-b-2 border-ink pb-4">
         <p className="font-label text-[11px] uppercase tracking-[0.15em] text-muted">
           {isEditing ? "EDIT PLACE" : "NEW PLACE"}
         </p>

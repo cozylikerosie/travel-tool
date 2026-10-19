@@ -9,7 +9,7 @@ import { MovePlaceDialog } from "./MovePlaceDialog";
 import { DayTabs } from "./DayTabs";
 import type { Place, TransportSegment } from "./itinerarySchema";
 import { moveItem, segmentId } from "./itineraryOrdering";
-import { PlaceForm } from "./PlaceForm";
+import { PlaceFormDialog } from "./PlaceFormDialog";
 import { PlaceTimeline } from "./PlaceTimeline";
 import { TransportSegmentRow } from "./TransportSegmentRow";
 import type { TransportModeCode } from "./transportModes";
@@ -108,7 +108,7 @@ export function DayItineraryPage({ trip, repository = itineraryRepository, onBac
   }
 
   return (
-    <main className="mx-auto grid min-h-screen w-full max-w-[1600px] content-start gap-6 px-5 py-8 md:px-12 md:py-10">
+    <main className="mx-auto grid min-h-screen w-full max-w-[1600px] content-start gap-6 px-5 py-8 md:px-12 md:py-10 lg:h-screen lg:grid-rows-[auto_minmax(0,1fr)] lg:content-stretch">
       <header className="grid gap-5">
         <button
           className="inline-flex min-h-11 w-fit items-center gap-2 text-sm text-muted hover:text-ink"
@@ -126,13 +126,14 @@ export function DayItineraryPage({ trip, repository = itineraryRepository, onBac
       </header>
 
       <div
-        className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-12"
+        className="grid grid-cols-1 gap-8 lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-12"
         data-testid="itinerary-layout"
       >
-        <section aria-label="當天時間軸" className="grid content-start gap-6">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink pb-3">
+        {/* 寬螢幕時整頁固定一個螢幕高：時間軸在自己的區塊內捲動，地圖填滿右欄 */}
+        <section aria-label="當天時間軸" className="grid content-start gap-6 lg:min-h-0 lg:overflow-y-auto lg:pr-3">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink bg-paper pb-3 lg:sticky lg:top-0 lg:z-10">
             <h2 className="font-display text-3xl text-ink">{day.label}</h2>
-            {places.length > 0 && !isAdding && !editingPlace && (
+            {places.length > 0 && (
               <button
                 className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-paper"
                 onClick={() => setIsAdding(true)}
@@ -148,7 +149,7 @@ export function DayItineraryPage({ trip, repository = itineraryRepository, onBac
           <p className="text-sm text-muted empty:hidden" role="status">{notice}</p>
 
           {isAdding && (
-            <PlaceForm
+            <PlaceFormDialog
               onCancel={() => setIsAdding(false)}
               onSubmit={async (fields) => {
                 await repository.addPlace(trip.id, dayNumber, fields);
@@ -159,7 +160,7 @@ export function DayItineraryPage({ trip, repository = itineraryRepository, onBac
           )}
 
           {editingPlace && (
-            <PlaceForm
+            <PlaceFormDialog
               initialPlace={editingPlace}
               key={editingPlace.id}
               onCancel={() => setEditingPlace(null)}
@@ -171,67 +172,65 @@ export function DayItineraryPage({ trip, repository = itineraryRepository, onBac
             />
           )}
 
-          {!(isAdding && places.length === 0) && (
-            <PlaceTimeline
-              dayLabel={day.label}
-              onAdd={() => setIsAdding(true)}
-              onReorder={(placeId, toIndex) => void handleReorder(placeId, toIndex)}
-              onSelectPlace={(placeId) => setSelection({ placeId, source: "list" })}
-              places={places}
-              scrollToSelected={selection?.source === "map"}
-              selectedPlaceId={selection?.placeId ?? null}
-              renderActions={(place) => {
-                const name = place.name || "未命名地點";
-                const actionClass =
-                  "grid size-11 place-items-center text-muted hover:text-ink";
-                return (
-                  <>
-                    <button
-                      aria-label={`編輯：${name}`}
-                      className={actionClass}
-                      onClick={() => {
-                        setIsAdding(false);
-                        setEditingPlace(place);
-                      }}
-                      type="button"
-                    >
-                      <Pencil aria-hidden="true" className="size-4" />
-                    </button>
-                    <button
-                      aria-label={`移到其他天：${name}`}
-                      className={actionClass}
-                      disabled={days.length < 2}
-                      onClick={() => setMovingPlace(place)}
-                      type="button"
-                    >
-                      <MoveRight aria-hidden="true" className="size-4" />
-                    </button>
-                    <button
-                      aria-label={`刪除：${name}`}
-                      className={`${actionClass} hover:text-budget-over`}
-                      onClick={() => setDeletingPlace(place)}
-                      type="button"
-                    >
-                      <Trash2 aria-hidden="true" className="size-4" />
-                    </button>
-                  </>
-                );
-              }}
-              renderSegment={(from, to) => (
-                <TransportSegmentRow
-                  from={from}
-                  mode={segmentModes.get(segmentId(from.id, to.id)) ?? null}
-                  onChange={(mode) => void handleTransportChange(from, to, mode)}
-                  to={to}
-                />
-              )}
-            />
-          )}
+          <PlaceTimeline
+            dayLabel={day.label}
+            onAdd={() => setIsAdding(true)}
+            onReorder={(placeId, toIndex) => void handleReorder(placeId, toIndex)}
+            onSelectPlace={(placeId) => setSelection({ placeId, source: "list" })}
+            places={places}
+            scrollToSelected={selection?.source === "map"}
+            selectedPlaceId={selection?.placeId ?? null}
+            renderActions={(place) => {
+              const name = place.name || "未命名地點";
+              const actionClass =
+                "grid size-11 place-items-center text-muted hover:text-ink";
+              return (
+                <>
+                  <button
+                    aria-label={`編輯：${name}`}
+                    className={actionClass}
+                    onClick={() => {
+                      setIsAdding(false);
+                      setEditingPlace(place);
+                    }}
+                    type="button"
+                  >
+                    <Pencil aria-hidden="true" className="size-4" />
+                  </button>
+                  <button
+                    aria-label={`移到其他天：${name}`}
+                    className={actionClass}
+                    disabled={days.length < 2}
+                    onClick={() => setMovingPlace(place)}
+                    type="button"
+                  >
+                    <MoveRight aria-hidden="true" className="size-4" />
+                  </button>
+                  <button
+                    aria-label={`刪除：${name}`}
+                    className={`${actionClass} hover:text-budget-over`}
+                    onClick={() => setDeletingPlace(place)}
+                    type="button"
+                  >
+                    <Trash2 aria-hidden="true" className="size-4" />
+                  </button>
+                </>
+              );
+            }}
+            renderSegment={(from, to) => (
+              <TransportSegmentRow
+                from={from}
+                mode={segmentModes.get(segmentId(from.id, to.id)) ?? null}
+                onChange={(mode) => void handleTransportChange(from, to, mode)}
+                to={to}
+              />
+            )}
+          />
         </section>
 
         <section
           aria-label="當天地圖"
-          className="h-[420px] min-h-0 border border-rule lg:sticky lg:top-0 lg:h-screen"
+          className="h-[420px] min-h-0 border border-rule lg:h-full"
           data-testid="map-panel"
         >
           <DayMap

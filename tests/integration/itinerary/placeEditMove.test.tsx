@@ -65,6 +65,34 @@ describe("US4 編輯、刪除與移動地點", () => {
     });
   });
 
+  it("opens editing in a dialog with focus inside, and closes with Escape", async () => {
+    const user = userEvent.setup();
+    await setupDay();
+
+    const editButton = screen.getByRole("button", { name: "編輯：倉敷美觀地區" });
+    await user.click(editButton);
+    const dialog = await screen.findByRole("dialog", { name: "編輯地點" });
+    expect(within(dialog).getByRole("form", { name: "編輯地點" })).toBeInTheDocument();
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    expect(within(dialog).getByLabelText("地點名稱")).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(editButton).toHaveFocus();
+  });
+
+  it("opens adding in a dialog and closes with the cancel button", async () => {
+    const user = userEvent.setup();
+    await setupDay();
+
+    await user.click(screen.getByRole("button", { name: "新增地點" }));
+    const dialog = await screen.findByRole("dialog", { name: "新增地點" });
+    expect(within(dialog).getByLabelText("座標或 Google 地圖網址")).toHaveFocus();
+
+    await user.click(within(dialog).getByRole("button", { name: "取消" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("puts a manual place on the map once coordinates are added", async () => {
     const user = userEvent.setup();
     await setupDay();

@@ -28,6 +28,8 @@ export interface MapLine {
   mode: TransportModeCode | null;
   lineStyle: LineStyle;
   className: string;
+  // true 表示中間略過了沒有座標的地點，以未設定的灰線連接前後兩個有座標的地點
+  bridgesManualPlaces: boolean;
 }
 
 export type MapViewport =
@@ -67,29 +69,32 @@ export function buildMapMarkers(sortedPlaces: readonly Place[], selectedPlaceId:
   });
 }
 
+// 依時間軸順序連接有座標的地點；中間若有沒有座標的地點，略過它直接連接前後兩點（灰線）
 export function buildMapLines(
   sortedPlaces: readonly Place[],
   segments: readonly Pick<TransportSegment, "id" | "mode">[],
 ): MapLine[] {
   const modes = new Map(segments.map((segment) => [segment.id, segment.mode]));
-  return listAdjacentPairs(sortedPlaces).flatMap(([from, to]) => {
-    const start = toTuple(from);
-    const end = toTuple(to);
-    if (!start || !end) return [];
-    const id = segmentId(from.id, to.id);
-    const mode = modes.get(id) ?? null;
+  const mapped = sortedPlaces.flatMap((place, index) => {
+    const position = toTuple(place);
+    return position ? [{ place, index, position }] : [];
+  });
+
+  return listAdjacentPairs(mapped).map(([from, to]) => {
+    const bridgesManualPlaces = to.index - from.index > 1;
+    const id = segmentId(from.place.id, to.place.id);
+    const mode = bridgesManualPlaces ? null : (modes.get(id) ?? null);
     const { lineStyle } = getTransportMode(mode);
-    return [
-      {
-        id,
-        fromPlaceId: from.id,
-        toPlaceId: to.id,
-        positions: [start, end],
-        mode,
-        lineStyle,
-        className: `${lineClassName(lineStyle.color)} map-line-mode-${mode ?? "unset"}`,
-      },
-    ];
+    return {
+      id,
+      fromPlaceId: from.place.id,
+      toPlaceId: to.place.id,
+      positions: [from.position, to.position],
+      mode,
+      lineStyle,
+      className: `${lineClassName(lineStyle.color)} map-line-mode-${mode ?? "unset"}`,
+      bridgesManualPlaces,
+    };
   });
 }
 

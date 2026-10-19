@@ -122,3 +122,29 @@ textarea {
 .map-line--flight { stroke: var(--color-route-flight); }
 .map-line--other { stroke: var(--color-route-other); }
 .map-line--unset { stroke: var(--color-route-unset); }
+
+/* Leaflet 縮放按鈕與版權列改用主題色，深色模式不會出現白色區塊 */
+.leaflet-container .leaflet-bar a {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-bottom-color: var(--color-rule);
+}
+
+.leaflet-container .leaflet-bar a:hover {
+  background: var(--color-surface);
+}
+
+.leaflet-container .leaflet-bar {
+  border: 1px solid var(--color-rule);
+  box-shadow: none;
+}
+
+/* 多一層 .leaflet-control-container，權重才會高於延後載入的 leaflet.css */
+.leaflet-container .leaflet-control-container .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--color-paper) 85%, transparent);
+  color: var(--color-muted);
+}
+
+.leaflet-container .leaflet-control-container .leaflet-control-attribution a {
+  color: var(--color-ink);
+}
