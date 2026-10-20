@@ -32,7 +32,7 @@ describe("database version 1 → 2 upgrade", () => {
     const database = createTripDatabase(name, factory);
     try {
       await expect(database.trips.get(trip.id)).resolves.toEqual(trip);
-      expect(database.verno).toBe(2);
+      expect(database.verno).toBe(3);
       await expect(database.places.count()).resolves.toBe(0);
       await expect(database.transportSegments.count()).resolves.toBe(0);
 

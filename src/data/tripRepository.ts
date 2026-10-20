@@ -35,9 +35,10 @@ export function createTripRepository(database: TripDatabase): TripRepository {
     async delete(id) {
       await database.transaction(
         "rw",
-        [database.trips, database.places, database.transportSegments],
+        [database.trips, database.places, database.transportSegments, database.expenses],
         async () => {
           await database.trips.delete(id);
+          await database.expenses.where("tripId").equals(id).delete();
           await database.places.where("tripId").equals(id).delete();
           await database.transportSegments.where("tripId").equals(id).delete();
         },

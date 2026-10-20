@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import type { Place, TransportSegment } from "../features/itinerary/itinerarySchema";
+import type { Expense } from "../features/expenses/expenseSchema";
 import type { Trip } from "../features/trips/tripSchema";
 
 export const DATABASE_NAME = "personal-travel-tool";
@@ -8,6 +9,7 @@ export class TripDatabase extends Dexie {
   trips!: Table<Trip, string>;
   places!: Table<Place, string>;
   transportSegments!: Table<TransportSegment, string>;
+  expenses!: Table<Expense, string>;
 
   constructor(
     name = DATABASE_NAME,
@@ -22,6 +24,13 @@ export class TripDatabase extends Dexie {
       trips: "id,startDate,endDate",
       places: "id, tripId, [tripId+dayNumber]",
       transportSegments: "id, tripId, [tripId+dayNumber]",
+    });
+    // 003：新增花費資料表，既有資料不需轉換
+    this.version(3).stores({
+      trips: "id,startDate,endDate",
+      places: "id, tripId, [tripId+dayNumber]",
+      transportSegments: "id, tripId, [tripId+dayNumber]",
+      expenses: "id, tripId",
     });
   }
 }

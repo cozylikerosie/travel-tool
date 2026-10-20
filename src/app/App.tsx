@@ -1,7 +1,10 @@
 import { ArrowLeft } from "lucide-react";
 import { Suspense, lazy, startTransition, useEffect, useState } from "react";
 import { itineraryRepository as defaultItineraryRepository, type ItineraryRepository } from "../data/itineraryRepository";
+import { expenseRepository as defaultExpenseRepository, type ExpenseRepository } from "../data/expenseRepository";
+import { transferRepository as defaultTransferRepository, type TransferRepository } from "../data/transferRepository";
 import { tripRepository, type TripRepository } from "../data/tripRepository";
+import { TravelModePage } from "../features/travel/TravelModePage";
 import { TripForm } from "../features/trips/TripForm";
 import { TripDetailsPage } from "../features/trips/TripDetailsPage";
 import { TripHomePage } from "../features/trips/TripHomePage";
@@ -17,17 +20,22 @@ const DayItineraryPage = lazy(() =>
 interface AppProps {
   repository?: TripRepository;
   itineraryRepository?: ItineraryRepository;
+  expenseRepository?: ExpenseRepository;
+  transferRepository?: TransferRepository;
 }
 
 export function App({
   repository = tripRepository,
   itineraryRepository = defaultItineraryRepository,
+  expenseRepository = defaultExpenseRepository,
+  transferRepository = defaultTransferRepository,
 }: AppProps = {}) {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [isItineraryOpen, setIsItineraryOpen] = useState(false);
+  const [isTravelModeOpen, setIsTravelModeOpen] = useState(false);
   const [copyDraft, setCopyDraft] = useState<TripFormInput | undefined>();
   const [loadError, setLoadError] = useState("");
 
@@ -64,6 +72,14 @@ export function App({
     await repository.delete(id);
     setTrips((currentTrips) => currentTrips.filter((trip) => trip.id !== id));
     setSelectedTripId(null);
+  }
+
+  async function handleImportItinerary(text: string) {
+    const result = await transferRepository.importItinerary(text);
+    setTrips(await repository.listAll());
+    return result.replaced
+      ? `已更新「${result.trip.name}」的行程（花費記錄保留）。`
+      : `已匯入「${result.trip.name}」。`;
   }
 
   function handleCopyTrip(initialValues: TripFormInput) {
@@ -140,9 +156,24 @@ export function App({
     );
   }
 
+  if (selectedTrip && isTravelModeOpen) {
+    return (
+      <TravelModePage
+        expenseRepository={expenseRepository}
+        itineraryRepository={itineraryRepository}
+        onBack={() => setIsTravelModeOpen(false)}
+        transferRepository={transferRepository}
+        trip={selectedTrip}
+      />
+    );
+  }
+
   if (selectedTrip) {
     return (
       <TripDetailsPage
+        expenseRepository={expenseRepository}
+        onOpenTravelMode={() => setIsTravelModeOpen(true)}
+        transferRepository={transferRepository}
         onBack={() => setSelectedTripId(null)}
         onCopy={handleCopyTrip}
         onDeleted={handleDeletedTrip}
@@ -158,6 +189,7 @@ export function App({
   return (
     <TripHomePage
       onCreate={() => setIsCreating(true)}
+      onImportItinerary={handleImportItinerary}
       onSelect={(trip) => setSelectedTripId(trip.id)}
       today={getTodayLocalDate()}
       trips={trips}
