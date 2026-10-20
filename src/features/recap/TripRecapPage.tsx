@@ -51,7 +51,10 @@ function RecapDaySection({ entry }: { entry: RecapDay }) {
                   <li className="grid grid-cols-[2rem_3.25rem_minmax(0,1fr)] items-baseline gap-2 border-t border-rule py-2" key={place.id}>
                     <span className="font-display text-lg text-accent">{index + 1}</span>
                     <span className="font-label text-sm tabular-nums text-muted">{place.arrivalTime}</span>
-                    <span className="font-title text-base text-ink">{place.name || "未命名地點"}</span>
+                    <span className="grid gap-1">
+                      <span className="font-title text-base text-ink">{place.name || "未命名地點"}</span>
+                      {place.notes && <span className="whitespace-pre-wrap text-sm leading-relaxed text-muted">{place.notes}</span>}
+                    </span>
                   </li>
                 ))}
               </ol>
