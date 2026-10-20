@@ -4,6 +4,7 @@ import { itineraryRepository as defaultItineraryRepository, type ItineraryReposi
 import { expenseRepository as defaultExpenseRepository, type ExpenseRepository } from "../data/expenseRepository";
 import { transferRepository as defaultTransferRepository, type TransferRepository } from "../data/transferRepository";
 import { tripRepository, type TripRepository } from "../data/tripRepository";
+import { TripRecapPage } from "../features/recap/TripRecapPage";
 import { TravelModePage } from "../features/travel/TravelModePage";
 import { TripForm } from "../features/trips/TripForm";
 import { TripDetailsPage } from "../features/trips/TripDetailsPage";
@@ -36,6 +37,7 @@ export function App({
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [isItineraryOpen, setIsItineraryOpen] = useState(false);
   const [isTravelModeOpen, setIsTravelModeOpen] = useState(false);
+  const [isRecapOpen, setIsRecapOpen] = useState(false);
   const [copyDraft, setCopyDraft] = useState<TripFormInput | undefined>();
   const [loadError, setLoadError] = useState("");
 
@@ -156,6 +158,17 @@ export function App({
     );
   }
 
+  if (selectedTrip && isRecapOpen) {
+    return (
+      <TripRecapPage
+        expenseRepository={expenseRepository}
+        itineraryRepository={itineraryRepository}
+        onBack={() => setIsRecapOpen(false)}
+        trip={selectedTrip}
+      />
+    );
+  }
+
   if (selectedTrip && isTravelModeOpen) {
     return (
       <TravelModePage
@@ -173,6 +186,7 @@ export function App({
       <TripDetailsPage
         expenseRepository={expenseRepository}
         onOpenTravelMode={() => setIsTravelModeOpen(true)}
+        onOpenRecap={() => setIsRecapOpen(true)}
         transferRepository={transferRepository}
         onBack={() => setSelectedTripId(null)}
         onCopy={handleCopyTrip}

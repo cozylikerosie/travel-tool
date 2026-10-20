@@ -148,3 +148,28 @@ textarea {
 .leaflet-container .leaflet-control-container .leaflet-control-attribution a {
   color: var(--color-ink);
 }
+
+/* 列印／存 PDF：一律使用淺色紙張配色，隱藏操作按鈕，每一天不被拆到兩頁 */
+@media print {
+  :root,
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+    --color-paper: #ffffff;
+    --color-surface: #ffffff;
+    --color-ink: #1a1a1a;
+    --color-muted: #6b6b6b;
+    --color-rule: #d9d5cc;
+    --color-accent: #8a7a5c;
+    --color-budget-good: #6f8a6b;
+    --color-budget-near: #b8935a;
+    --color-budget-over: #a65a4e;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-keep {
+    break-inside: avoid;
+  }
+}

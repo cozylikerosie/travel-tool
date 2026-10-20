@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Download, Pencil, Smartphone, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarDays, Download, Pencil, Smartphone, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatMoney } from "../../shared/money/budget";
 import { getTripDurationDays, listTripDays, type TripDay } from "../../shared/dates/tripDates";
@@ -38,6 +38,7 @@ interface TripDetailsPageProps {
   onCopy: (initialValues: TripFormInput) => void;
   onOpenItinerary: () => void;
   onOpenTravelMode: () => void;
+  onOpenRecap: () => void;
 }
 
 export function TripDetailsPage({
@@ -52,6 +53,7 @@ export function TripDetailsPage({
   onCopy,
   onOpenItinerary,
   onOpenTravelMode,
+  onOpenRecap,
 }: TripDetailsPageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -199,6 +201,14 @@ export function TripDetailsPage({
             >
               <Smartphone aria-hidden="true" className="size-4" />
               旅途模式
+            </button>
+            <button
+              className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-paper"
+              onClick={onOpenRecap}
+              type="button"
+            >
+              <BookOpen aria-hidden="true" className="size-4" />
+              旅程回顧
             </button>
             <button
               className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm text-ink hover:bg-ink hover:text-paper"
